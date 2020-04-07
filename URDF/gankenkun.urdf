@@ -8,7 +8,7 @@
     <color rgba="0.0 0.0 0.0 1.0"/>
   </material>
   <material name="blue">
-    <color rgba="0.0 0.0 0.8 1.0"/>
+    <color rgba="0.2 0.2 1.0 1.0"/>
   </material>
   <material name="green">
     <color rgba="0.0 0.8 0.0 1.0"/>
@@ -23,7 +23,7 @@
     <color rgba="1.0 0.811764705882 0.764705882353 1.0"/>
   </material>
   <material name="red">
-    <color rgba="0.8 0.0 0.0 1.0"/>
+    <color rgba="1.0 0.0 0.0 1.0"/>
   </material>
   <material name="white">
     <color rgba="1.0 1.0 1.0 1.0"/>
@@ -55,13 +55,14 @@
     <visual>
       <origin rpy="-1.57079632679 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/body.stl"/>
+        <mesh filename="URDF/meshes/STL/body.stl"/>
       </geometry>
+      <material name="white"/>
     </visual>
     <collision>
       <origin rpy="-1.57079632679 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/body.stl"/>
+        <mesh filename="URDF/meshes/STL/body.stl"/>
       </geometry>
     </collision>
   </link>
@@ -83,13 +84,14 @@
     <visual>
       <origin rpy="-1.57079632679 1.57079632679 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/head.stl"/>
+        <mesh filename="URDF/meshes/STL/head.stl"/>
       </geometry>
+      <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="-1.57079632679 1.57079632679 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/head.stl"/>
+        <mesh filename="URDF/meshes/STL/head.stl"/>
       </geometry>
     </collision>
   </link>
@@ -125,14 +127,15 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/shoulder.stl"/>
+        <mesh filename="URDF/meshes/STL/shoulder.stl"/>
       </geometry>
+      <material name="black"/>
     </visual>
     <collision>
       <!-- fix shoulder collision.stl -->
       <origin rpy="0 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/shoulder.stl"/>
+        <mesh filename="URDF/meshes/STL/shoulder.stl"/>
       </geometry>
     </collision>
   </link>
@@ -145,13 +148,14 @@
     <visual>
       <origin rpy="0 1.57079632679 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/arm.stl"/>
+        <mesh filename="URDF/meshes/STL/arm.stl"/>
       </geometry>
+      <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 1.57079632679 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/arm.stl"/>
+        <mesh filename="URDF/meshes/STL/arm.stl"/>
       </geometry>
     </collision>
   </link>
@@ -164,13 +168,14 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/hand.stl"/>
+        <mesh filename="URDF/meshes/STL/hand.stl"/>
       </geometry>
+      <material name="white"/>
     </visual>
     <collision>
       <origin rpy="0 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/hand.stl"/>
+        <mesh filename="URDF/meshes/STL/hand.stl"/>
       </geometry>
     </collision>
   </link>
@@ -206,14 +211,15 @@
     <visual>
       <origin rpy="0 3.14159265359 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/shoulder.stl"/>
+        <mesh filename="URDF/meshes/STL/shoulder.stl"/>
       </geometry>
+      <material name="black"/>
     </visual>
     <collision>
       <!-- fix shoulder collision.stl -->
       <origin rpy="0 3.14159265359 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/shoulder.stl"/>
+        <mesh filename="URDF/meshes/STL/shoulder.stl"/>
       </geometry>
     </collision>
   </link>
@@ -226,13 +232,14 @@
     <visual>
       <origin rpy="0 1.57079632679 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/arm.stl"/>
+        <mesh filename="URDF/meshes/STL/arm.stl"/>
       </geometry>
+      <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 1.57079632679 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/arm.stl"/>
+        <mesh filename="URDF/meshes/STL/arm.stl"/>
       </geometry>
     </collision>
   </link>
@@ -245,13 +252,14 @@
     <visual>
       <origin rpy="3.14159265359 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/hand.stl"/>
+        <mesh filename="URDF/meshes/STL/hand.stl"/>
       </geometry>
+      <material name="white"/>
     </visual>
     <collision>
       <origin rpy="3.14159265359 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/hand.stl"/>
+        <mesh filename="URDF/meshes/STL/hand.stl"/>
       </geometry>
     </collision>
   </link>
@@ -353,13 +361,14 @@
     <visual>
       <origin rpy="-1.57079632679 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_yaw.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_yaw.stl"/>
       </geometry>
+      <material name="white"/>
     </visual>
     <collision>
       <origin rpy="-1.57079632679 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_yaw.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_yaw.stl"/>
       </geometry>
     </collision>
   </link>
@@ -372,13 +381,14 @@
     <visual>
       <origin rpy="-1.57079632679 -1.57079632679 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_roll_left.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_roll_left.stl"/>
       </geometry>
+      <material name="black"/>
     </visual>
     <collision>
       <origin rpy="-1.57079632679 -1.57079632679 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_roll_left.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_roll_left.stl"/>
       </geometry>
     </collision>
   </link>
@@ -391,13 +401,14 @@
     <visual>
       <origin rpy="1.57079632679 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/slider_crank.stl"/>
+        <mesh filename="URDF/meshes/STL/slider_crank.stl"/>
       </geometry>
+      <material name="white"/>
     </visual>
     <collision>
       <origin rpy="1.57079632679 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/slider_crank.stl"/>
+        <mesh filename="URDF/meshes/STL/slider_crank.stl"/>
       </geometry>
     </collision>
   </link>
@@ -410,13 +421,14 @@
     <visual>
       <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_pitch.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_pitch.stl"/>
       </geometry>
+      <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_pitch.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_pitch.stl"/>
       </geometry>
     </collision>
   </link>
@@ -429,13 +441,14 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_pitch_mimic.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_pitch_mimic.stl"/>
       </geometry>
+      <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_pitch_mimic.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_pitch_mimic.stl"/>
       </geometry>
     </collision>
   </link>
@@ -448,13 +461,14 @@
     <visual>
       <origin rpy="0 3.14159265359 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/knee_pitch_left.stl"/>
+        <mesh filename="URDF/meshes/STL/knee_pitch_left.stl"/>
       </geometry>
+      <material name="black"/>
     </visual>
     <collision>
       <origin rpy="0 3.14159265359 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/knee_pitch_left.stl"/>
+        <mesh filename="URDF/meshes/STL/knee_pitch_left.stl"/>
       </geometry>
     </collision>
   </link>
@@ -467,13 +481,14 @@
     <visual>
       <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/shin_pitch.stl"/>
+        <mesh filename="URDF/meshes/STL/shin_pitch.stl"/>
       </geometry>
+      <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/shin_pitch.stl"/>
+        <mesh filename="URDF/meshes/STL/shin_pitch.stl"/>
       </geometry>
     </collision>
   </link>
@@ -486,13 +501,14 @@
     <visual>
       <origin rpy="3.14159265359 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/shin_pitch_mimic.stl"/>
+        <mesh filename="URDF/meshes/STL/shin_pitch_mimic.stl"/>
       </geometry>
+      <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="3.14159265359 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/shin_pitch_mimic.stl"/>
+        <mesh filename="URDF/meshes/STL/shin_pitch_mimic.stl"/>
       </geometry>
     </collision>
   </link>
@@ -505,13 +521,14 @@
     <visual>
       <origin rpy="1.57079632679 0 3.14159265359" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/independent_pitch.stl"/>
+        <mesh filename="URDF/meshes/STL/independent_pitch.stl"/>
       </geometry>
+      <material name="black"/>
     </visual>
     <collision>
       <origin rpy="1.57079632679 0 3.14159265359" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/independent_pitch.stl"/>
+        <mesh filename="URDF/meshes/STL/independent_pitch.stl"/>
       </geometry>
     </collision>
   </link>
@@ -524,13 +541,14 @@
     <visual>
       <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/ankle_pitch_left.stl"/>
+        <mesh filename="URDF/meshes/STL/ankle_pitch_left.stl"/>
       </geometry>
+      <material name="white"/>
     </visual>
     <collision>
       <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/ankle_pitch_left.stl"/>
+        <mesh filename="URDF/meshes/STL/ankle_pitch_left.stl"/>
       </geometry>
     </collision>
   </link>
@@ -543,13 +561,14 @@
     <visual>
       <origin rpy="-1.57079632679 -1.57079632679 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/ankle_roll_left.stl"/>
+        <mesh filename="URDF/meshes/STL/ankle_roll_left.stl"/>
       </geometry>
+      <material name="black"/>
     </visual>
     <collision>
       <origin rpy="-1.57079632679 -1.57079632679 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/ankle_roll_left.stl"/>
+        <mesh filename="URDF/meshes/STL/ankle_roll_left.stl"/>
       </geometry>
     </collision>
   </link>
@@ -652,13 +671,14 @@
     <visual>
       <origin rpy="-1.57079632679 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_yaw.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_yaw.stl"/>
       </geometry>
+      <material name="white"/>
     </visual>
     <collision>
       <origin rpy="-1.57079632679 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_yaw.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_yaw.stl"/>
       </geometry>
     </collision>
   </link>
@@ -671,13 +691,14 @@
     <visual>
       <origin rpy="-1.57079632679 -1.57079632679 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_roll_right.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_roll_right.stl"/>
       </geometry>
+      <material name="black"/>
     </visual>
     <collision>
       <origin rpy="-1.57079632679 -1.57079632679 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_roll_right.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_roll_right.stl"/>
       </geometry>
     </collision>
   </link>
@@ -690,13 +711,14 @@
     <visual>
       <origin rpy="1.57079632679 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/slider_crank.stl"/>
+        <mesh filename="URDF/meshes/STL/slider_crank.stl"/>
       </geometry>
+      <material name="white"/>
     </visual>
     <collision>
       <origin rpy="1.57079632679 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/slider_crank.stl"/>
+        <mesh filename="URDF/meshes/STL/slider_crank.stl"/>
       </geometry>
     </collision>
   </link>
@@ -709,13 +731,14 @@
     <visual>
       <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_pitch.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_pitch.stl"/>
       </geometry>
+      <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_pitch.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_pitch.stl"/>
       </geometry>
     </collision>
   </link>
@@ -728,13 +751,14 @@
     <visual>
       <origin rpy="0 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_pitch_mimic.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_pitch_mimic.stl"/>
       </geometry>
+      <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/waist_pitch_mimic.stl"/>
+        <mesh filename="URDF/meshes/STL/waist_pitch_mimic.stl"/>
       </geometry>
     </collision>
   </link>
@@ -747,13 +771,14 @@
     <visual>
       <origin rpy="3.14159265359 3.14159265359 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/knee_pitch_right.stl"/>
+        <mesh filename="URDF/meshes/STL/knee_pitch_right.stl"/>
       </geometry>
+      <material name="black"/>
     </visual>
     <collision>
       <origin rpy="3.14159265359 3.14159265359 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/knee_pitch_right.stl"/>
+        <mesh filename="URDF/meshes/STL/knee_pitch_right.stl"/>
       </geometry>
     </collision>
   </link>
@@ -766,13 +791,14 @@
     <visual>
       <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/shin_pitch.stl"/>
+        <mesh filename="URDF/meshes/STL/shin_pitch.stl"/>
       </geometry>
+      <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/shin_pitch.stl"/>
+        <mesh filename="URDF/meshes/STL/shin_pitch.stl"/>
       </geometry>
     </collision>
   </link>
@@ -785,13 +811,14 @@
     <visual>
       <origin rpy="3.14159265359 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/shin_pitch_mimic.stl"/>
+        <mesh filename="URDF/meshes/STL/shin_pitch_mimic.stl"/>
       </geometry>
+      <material name="grey"/>
     </visual>
     <collision>
       <origin rpy="3.14159265359 0 1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/shin_pitch_mimic.stl"/>
+        <mesh filename="URDF/meshes/STL/shin_pitch_mimic.stl"/>
       </geometry>
     </collision>
   </link>
@@ -804,13 +831,14 @@
     <visual>
       <origin rpy="1.57079632679 0 3.14159265359" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/independent_pitch.stl"/>
+        <mesh filename="URDF/meshes/STL/independent_pitch.stl"/>
       </geometry>
+      <material name="black"/>
     </visual>
     <collision>
       <origin rpy="1.57079632679 0 3.14159265359" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/independent_pitch.stl"/>
+        <mesh filename="URDF/meshes/STL/independent_pitch.stl"/>
       </geometry>
     </collision>
   </link>
@@ -823,13 +851,14 @@
     <visual>
       <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/ankle_pitch_right.stl"/>
+        <mesh filename="URDF/meshes/STL/ankle_pitch_right.stl"/>
       </geometry>
+      <material name="white"/>
     </visual>
     <collision>
       <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/ankle_pitch_right.stl"/>
+        <mesh filename="URDF/meshes/STL/ankle_pitch_right.stl"/>
       </geometry>
     </collision>
   </link>
@@ -842,13 +871,14 @@
     <visual>
       <origin rpy="-1.57079632679 -1.57079632679 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/ankle_roll_right.stl"/>
+        <mesh filename="URDF/meshes/STL/ankle_roll_right.stl"/>
       </geometry>
+      <material name="black"/>
     </visual>
     <collision>
       <origin rpy="-1.57079632679 -1.57079632679 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/STL/ankle_roll_right.stl"/>
+        <mesh filename="URDF/meshes/STL/ankle_roll_right.stl"/>
       </geometry>
     </collision>
   </link>
