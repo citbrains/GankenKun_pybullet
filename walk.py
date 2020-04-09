@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-import matplotlib.pyplot as plt
-import numpy as np
-import quaternion
 import pybullet as p
 from time import sleep
 
@@ -54,12 +51,11 @@ while p.isConnected():
     velocity *= -1.0
 
   cam_pos, cam_quat = p.getLinkState(RobotId, index['camera_link'])[:2]
-  quat = np.quaternion(cam_quat[3], cam_quat[0], cam_quat[1], cam_quat[2])
-  rotMat = quaternion.as_rotation_matrix(quat)
-  pos0 = rotMat[0][0] * cam_pos[0] + rotMat[1][0] * cam_pos[1] + rotMat[2][0] * cam_pos[2];
-  pos1 = rotMat[0][1] * cam_pos[0] + rotMat[1][1] * cam_pos[1] + rotMat[2][1] * cam_pos[2];
-  pos2 = rotMat[0][2] * cam_pos[0] + rotMat[1][2] * cam_pos[1] + rotMat[2][2] * cam_pos[2];
-  viewMat = [rotMat[0][0], rotMat[0][1], rotMat[0][2], 0.0, rotMat[1][0], rotMat[1][1], rotMat[1][2], 0.0, rotMat[2][0], rotMat[2][1], rotMat[2][2], 0.0, -pos0, -pos1, -pos2, 1.0]
+  rotMat = p.getMatrixFromQuaternion(cam_quat)
+  pos0 = rotMat[0] * cam_pos[0] + rotMat[3] * cam_pos[1] + rotMat[6] * cam_pos[2];
+  pos1 = rotMat[1] * cam_pos[0] + rotMat[4] * cam_pos[1] + rotMat[7] * cam_pos[2];
+  pos2 = rotMat[2] * cam_pos[0] + rotMat[5] * cam_pos[1] + rotMat[8] * cam_pos[2];
+  viewMat = [rotMat[0], rotMat[1], rotMat[2], 0.0, rotMat[3], rotMat[4], rotMat[5], 0.0, rotMat[6], rotMat[7], rotMat[8], 0.0, -pos0, -pos1, -pos2, 1.0]
   p.getCameraImage(128, 128, renderer=p.ER_BULLET_HARDWARE_OPENGL,
     flags=p.ER_NO_SEGMENTATION_MASK, viewMatrix=viewMat, projectionMatrix=projMat)
 
