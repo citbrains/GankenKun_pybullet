@@ -31,6 +31,8 @@ p.setJointMotorControl(RobotId, index['right_upper_arm_link'], p.POSITION_CONTRO
 
 angle = 0
 velocity = 5
+camera = p.getDebugVisualizerCamera()
+projMat = camera[3]
 while p.isConnected():
   angle += velocity * TIME_STEP
   p.setJointMotorControl(RobotId, index['left_waist_pitch_link' ], p.POSITION_CONTROL, -angle)
@@ -50,30 +52,15 @@ while p.isConnected():
   if angle <= 0.0:
     velocity *= -1.0
 
-#  print(p.getLinkState(RobotId, index['camera_link']))
-#  camera_position, camera_orientation = p.getLinkState(RobotId, index['camera_link'])[:2]
   cam_pos, cam_quat = p.getLinkState(RobotId, index['camera_link'])[:2]
-  quat = np.quaternion(cam_quat[0], cam_quat[1], cam_quat[2], cam_quat[3])
-  rotMat = quaternion.as_rotation_matrix(quat.conjugate())
+  quat = np.quaternion(cam_quat[3], cam_quat[0], cam_quat[1], cam_quat[2])
+  rotMat = quaternion.as_rotation_matrix(quat)
   pos0 = rotMat[0][0] * cam_pos[0] + rotMat[1][0] * cam_pos[1] + rotMat[2][0] * cam_pos[2];
   pos1 = rotMat[0][1] * cam_pos[0] + rotMat[1][1] * cam_pos[1] + rotMat[2][1] * cam_pos[2];
   pos2 = rotMat[0][2] * cam_pos[0] + rotMat[1][2] * cam_pos[1] + rotMat[2][2] * cam_pos[2];
-  viewMat = [-rotMat[0][0], -rotMat[0][1], -rotMat[0][2], 0.0, -rotMat[1][0], -rotMat[1][1], -rotMat[1][2], 0.0, -rotMat[2][0], -rotMat[2][1], -rotMat[2][2], 0.0, -pos0, -pos1, -pos2, 1.0]
-
-#  viewMat = p.computeViewMatrix(
-#    cameraEyePosition=cam_pos,
-#    cameraTargetPosition=[0, 0, 0],
-#    cameraUpVector=[0, 0, 1])
-
-#  print(cam_quat)
-#  print(rotMat)
-#  print(viewMat)
-
-  camera = p.getDebugVisualizerCamera()
-  projMat = camera[3]
+  viewMat = [rotMat[0][0], rotMat[0][1], rotMat[0][2], 0.0, rotMat[1][0], rotMat[1][1], rotMat[1][2], 0.0, rotMat[2][0], rotMat[2][1], rotMat[2][2], 0.0, -pos0, -pos1, -pos2, 1.0]
   p.getCameraImage(128, 128, renderer=p.ER_BULLET_HARDWARE_OPENGL,
     flags=p.ER_NO_SEGMENTATION_MASK, viewMatrix=viewMat, projectionMatrix=projMat)
-
 
   p.stepSimulation()
   sleep(TIME_STEP)
