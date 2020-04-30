@@ -87,4 +87,3 @@ if __name__ == '__main__':
   planner = foot_step_planner(0.01, 0.06, 0.04, 0.1, 0.34, 0.044)
   foot_step = planner.calculate(0.3, 0.0, 0.0, 'right', 'start')
   print(foot_step)
-
