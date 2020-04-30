@@ -18,7 +18,8 @@ class kinematics():
     for id in range(p.getNumJoints(self.RobotId)):
       self.index_dof[p.getJointInfo(self.RobotId, id)[12].decode('UTF-8')] = p.getJointInfo(self.RobotId, id)[3] - 7
 
-  def solve_ik(self, left_foot, right_foot, joint_angles):
+  def solve_ik(self, left_foot, right_foot, current_angles):
+    joint_angles = current_angles.copy()
     l_x, l_y, l_z, l_roll, l_pitch, l_yaw = left_foot
     l_x -= self.OFFSET_X
     l_y -= self.OFFSET_W
@@ -71,6 +72,8 @@ class kinematics():
     joint_angles[self.index_dof['right_ankle_pitch_link'      ]] = r_pitch
     joint_angles[self.index_dof['right_ankle_roll_link'       ]] = r_roll - waist_roll
 
+    return joint_angles
+
 if __name__ == '__main__':
   TIME_STEP = 0.001
   physicsClient = p.connect(p.GUI)
@@ -92,10 +95,10 @@ if __name__ == '__main__':
   for id in range(p.getNumJoints(RobotId)):
     index_dof[p.getJointInfo(RobotId, id)[12].decode('UTF-8')] = p.getJointInfo(RobotId, id)[3] - 7
 
-  joint_angle = []
+  joint_angles = []
   for id in range(p.getNumJoints(RobotId)):
     if p.getJointInfo(RobotId, id)[3] > -1:
-      joint_angle += [0,]
+      joint_angles += [0,]
 
   height = 0.0
   velocity = 0.1
@@ -104,12 +107,12 @@ if __name__ == '__main__':
     body_pos, body_ori = p.getLinkState(RobotId, index['body_link'])[:2]
     tar_left_foot_pos  = [left_foot_pos0[0] , left_foot_pos0[1] , height, 0.0, 0.0, 0.0]
     tar_right_foot_pos = [right_foot_pos0[0], right_foot_pos0[1], height, 0.0, 0.0, 0.0]
-    kine.solve_ik(tar_left_foot_pos, tar_right_foot_pos, joint_angle)
+    joint_angles = kine.solve_ik(tar_left_foot_pos, tar_right_foot_pos, joint_angles)
 
     for id in range(p.getNumJoints(RobotId)):
       qIndex = p.getJointInfo(RobotId, id)[3]
       if qIndex > -1:
-        p.setJointMotorControl2(RobotId, id, p.POSITION_CONTROL, joint_angle[qIndex-7])
+        p.setJointMotorControl2(RobotId, id, p.POSITION_CONTROL, joint_angles[qIndex-7])
 
     if height <= 0.0 or height >= 0.1:
       velocity *= -1.0

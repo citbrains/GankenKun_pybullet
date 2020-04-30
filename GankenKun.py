@@ -50,8 +50,8 @@ initialAngle[index_dof['right_shin_pitch_link' ]] =  0.5
 initialAngle[index_dof['right_knee_pitch_link' ]] =  0.5
 initialAngle[index_dof['right_ankle_pitch_link']] = -0.5
 
-height = 0
-velocity = 0.2
+height = 0.0
+velocity = 0.1
 camera = p.getDebugVisualizerCamera()
 projMat = camera[3]
 joint_angle = initialAngle
@@ -60,8 +60,8 @@ while p.isConnected():
   body_pos, body_ori = p.getLinkState(RobotId, index['body_link'])[:2]
 #  tar_left_foot_pos  = (left_foot_pos0[0] , left_foot_pos0[1] , height)
 #  tar_right_foot_pos = (right_foot_pos0[0], right_foot_pos0[1], height)
-  tar_left_foot_pos  = [left_foot_pos0[0], left_foot_pos0[1], height, 0.0, 0.0, 0.0]
-  tar_right_foot_pos = [right_foot_pos0[0], right_foot_pos0[1], height, 0.0, 0.0, 0.0]
+  tar_left_foot_pos  = [left_foot_pos0[0], left_foot_pos0[1]+height-0.05, 0.05, 0.0, 0.0, 0.0]
+  tar_right_foot_pos = [right_foot_pos0[0], right_foot_pos0[1]+height-0.05, 0.05, 0.0, 0.0, 0.0]
   kine.solve_ik(tar_left_foot_pos, tar_right_foot_pos, joint_angle)
 #  joint_angle = list(p.calculateInverseKinematics(RobotId, index['left_foot_link' ], tar_left_foot_pos ,   left_foot_ori0 , currentPositions=joint_angle))
 #  joint_angle = list(p.calculateInverseKinematics(RobotId, index['right_foot_link' ], tar_right_foot_pos,   right_foot_ori0, currentPositions=joint_angle))
@@ -81,7 +81,7 @@ while p.isConnected():
 
   if height >= 0.1:
     velocity *= -1.0
-  if height <= -0.0:
+  if height <= 0.0:
     velocity *= -1.0
 
   cam_pos, cam_quat = p.getLinkState(RobotId, index['camera_link'])[:2]
@@ -94,5 +94,5 @@ while p.isConnected():
 #    flags=p.ER_NO_SEGMENTATION_MASK, viewMatrix=viewMat, projectionMatrix=projMat)
 
   p.stepSimulation()
-#  sleep(TIME_STEP)
+  sleep(TIME_STEP)
 
