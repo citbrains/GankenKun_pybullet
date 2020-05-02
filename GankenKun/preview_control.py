@@ -6,6 +6,7 @@ import math
 import numpy as np
 import control
 import control.matlab
+import csv
 
 class preview_control():
   def __init__(self, dt, period, z, Q = 1.0e+8, H = 1.0):
@@ -34,32 +35,50 @@ class preview_control():
     self.F = -np.linalg.inv(H+G.transpose()*P*G)*G.transpose()*P*Phai
     xi = (np.eye(4)-G*np.linalg.inv(H+G.transpose()*P*G)*G.transpose()*P)*Phai;
     self.f = []
+    self.xp, self.yp = np.matrix([[0.0],[0.0],[0.0]]), np.matrix([[0.0],[0.0],[0.0]])
+    self.ux, self.uy = 0.0, 0.0
     for i in range(0,round(period/dt)):
       self.f += [-np.linalg.inv(H+G.transpose()*P*G)*G.transpose()*np.linalg.matrix_power(xi.transpose(),i-1)*P*GR]
 
-  def set_param(self, pos, vel, acc, foot_plan):
-    x, y = np.matrix([[pos[0]],[vel[0]],[acc[0]]]), np.matrix([[pos[1]],[vel[1]],[acc[1]]])
-    xp, yp = x.copy(), y.copy()
-    ux, uy = 0.0, 0.0
+  def set_param(self, t, current_x, current_y, foot_plan, pre_reset = False):
+    x, y = current_x.copy(), current_y.copy()
+    if pre_reset == True:
+      self.xp, self.yp = x.copy(), y.copy()
+      self.ux, self.uy = 0.0, 0.0
     COG_X = []
-    for i in range(round(foot_plan[1][0]/self.dt)):
+    for i in range(round((foot_plan[1][0] - t)/self.dt)):
       px, py = self.C_d * x, self.C_d * y
       ex, ey = foot_plan[0][1] - px, foot_plan[0][2] - py
-      X, Y = np.block([[ex], [x - xp]]), np.block([[ey], [y - yp]])
-      xp, yp = x.copy(), y.copy()
+      X, Y = np.block([[ex], [x - self.xp]]), np.block([[ey], [y - self.yp]])
+      self.xp, self.yp = x.copy(), y.copy()
       dux, duy = self.F * X, self.F * Y
       index = 1
-      for j in range(round(self.period/self.dt)-1):
-        if self.dt * (i + j) >= foot_plan[index][0]:
+      for j in range(1,round(self.period/self.dt)-1):
+        if round((i+j)+t/self.dt) >= round(foot_plan[index][0]/self.dt):
           dux += self.f[j] * (foot_plan[index][1]-foot_plan[index-1][1])
           duy += self.f[j] * (foot_plan[index][2]-foot_plan[index-1][2])
           index += 1
-      ux, uy = ux + dux, uy + duy
-      x, y = self.A_d * x + self.B_d * ux, self.A_d * y + self.B_d * uy
+      self.ux, self.uy = self.ux + dux, self.uy + duy
+      x, y = self.A_d * x + self.B_d * self.ux, self.A_d * y + self.B_d * self.uy
       COG_X += [np.block([x[0][0], y[0][0], px[0][0], py[0][0]])]
     return COG_X, x, y
 
 if __name__ == '__main__':
   pc = preview_control(0.01, 1.0, 0.27)
-  foot_step = [[0, 0, 0], [0.6, 0.1, 0.06], [0.9, 0.2, -0.06], [1.2, 0.2, 0.0], [3.2, 0.2, 0.0]]
-  print(pc.set_param([0,0], [0,0], [0,0], foot_step))
+  foot_step = [[0, 0, 0], [0.34, 0, 0.06], [0.68, 0.05, -0.06], [1.02, 0.10, 0.06], [1.36, 0.15, -0.06], [1.7, 0.20, 0.06], [2.04, 0.25, 0.0], [2.72, 0.25, 0.0], [100, 0.25, 0.0]]
+  x, y = np.matrix([[0.0],[0.0],[0.0]]), np.matrix([[0.0],[0.0],[0.0]])
+  with open('result.csv', mode='w') as f:
+    f.write('')
+  t = 0
+  while True:
+    if len(foot_step) <= 2:
+      break
+    cog, x, y = pc.set_param(t, x, y, foot_step)
+    with open('result.csv', mode='a') as f:
+      writer = csv.writer(f)
+      for i in cog:
+        writer.writerow(i.tolist()[0])
+      f.write('\n')
+    del foot_step[0]
+    t = foot_step[0][0]
+#  print(pc.set_param([0,0], [0,0], [0,0], foot_step))

@@ -18,10 +18,12 @@ class walking():
     self.pc = pc
     self.X = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
     self.pattern = []
-    self.foot_step = [[0.0, 0.0, 0.0], [0.34, 0.0, 0.06], [0.6, 0.0, -0.06], [1.02, 0.0, 0.06], [1.36, 0.0, -0.06]]
+    self.foot_step = [[0.0, 0.0, 0.0,'both'], [0.34, 0.0, 0.06,'left'], [0.68, 0.05, -0.06,'right'], [1.02, 0.10, 0.06,'left'], [1.36, 0.15, -0.06,'right']]
     self.left_up = self.right_up = 0.0
     self.is_first = True
     self.gyro_pitch = self.gyro_roll = 0.0
+    self.left_off,  self.left_off_g,  self.left_off_d  = np.matrix([[0.0, 0.0]]),  np.matrix([[0.0, 0.0]]),  np.matrix([[0.0, 0.0]]) 
+    self.right_off, self.right_off_g, self.right_off_d = np.matrix([[0.0, 0.0]]),  np.matrix([[0.0, 0.0]]),  np.matrix([[0.0, 0.0]])
     return
 
   def setGoalPos(self, pos):
@@ -30,13 +32,24 @@ class walking():
       td = self.foot_step[0][0]
       xd = self.foot_step[0][1]
       for i in range(len(self.foot_step)):
-        self.foot_step[i] = [round(self.foot_step[i][0]-td,2), round(self.foot_step[i][1]-xd,2), round(self.foot_step[i][2],2)]
+        self.foot_step[i] = [round(self.foot_step[i][0]-td,2), round(self.foot_step[i][1],2), round(self.foot_step[i][2],2), self.foot_step[i][3]]
     self.is_first = False
-    self.foot_step += [[round(self.foot_step[4][0]+0.34,2), self.foot_step[4][1], -self.foot_step[4][2]]]
+    self.foot_step += [[round(self.foot_step[4][0]+0.34,2), round(self.foot_step[4][1]+0.05,2), -self.foot_step[4][2], 'right' if self.foot_step[4][3]=='left' else 'left']]
+    
     print(str(self.foot_step)+'\n')
     self.X[0] = [self.X[0][0]-self.foot_step[0][1], self.X[0][1]]
-    self.pattern, x, y = self.pc.set_param(self.X[0], self.X[1], self.X[2], self.foot_step)
+    self.pattern, x, y = self.pc.set_param(0,self.X[0], self.X[1], self.X[2], self.foot_step)
     self.X = [[x[0,0], y[0,0]], [x[1,0], y[1,0]], [x[2,0], y[2,0]]]
+    if self.foot_step[0][3] == 'left':
+      self.right_off_g = np.matrix([[self.foot_step[1][1] - self.foot_step[0][1], self.foot_step[1][2] - self.foot_step[0][2]+0.12]])
+      self.left_off, self.left_off_g  = np.matrix([[0.0, 0.0]]), np.matrix([[0.0, 0.0]])
+      self.right_off_d = self.right_off_g / 28
+    if self.foot_step[0][3] == 'right':
+      self.left_off_g  = np.matrix([[self.foot_step[1][1] - self.foot_step[0][1], self.foot_step[1][2] - self.foot_step[0][2]-0.12]])
+      self.right_off_g, self.right_off_g  = np.matrix([[0.0, 0.0]]), np.matrix([[0.0, 0.0]])
+      self.left_off_d  = self.left_off_g / 28
+    print(self.left_off_g, self.right_off_g)
+#    self.left_off_g = [foot_step[1][0], foot_step[1][1]]
     return self.pattern
 
   def getNextPos(self):
@@ -53,6 +66,10 @@ class walking():
         self.left_up  += foot_hight/period_up
       elif self.left_up > 0:
         self.left_up  = max(self.left_up  - foot_hight/period_up, 0.0)
+      if start_up < (period-len(self.pattern)):
+        self.left_off += self.left_off_d
+        if (period-len(self.pattern)) > (start_up + period_up):
+          self.left_off = self.left_off_g.copy()
     if self.foot_step[0][2] > 0:
       if start_up < (period-len(self.pattern)) <= end_up:
         self.right_up += foot_hight/period_up
@@ -60,8 +77,14 @@ class walking():
         self.right_up = max(self.right_up - foot_hight/period_up, 0.0)
       else:
         self.right_up = 0.0
-    left_foot  = [self. left_foot0[0]-X[0,0], self. left_foot0[1]-X[0,1], self. left_foot0[2]+self.left_up , 0.0, 0.0, 0.0]
-    right_foot = [self.right_foot0[0]-X[0,0], self.right_foot0[1]-X[0,1], self.right_foot0[2]+self.right_up, 0.0, 0.0, 0.0]
+      if start_up < (period-len(self.pattern)):
+        self.right_off += self.right_off_d
+        if (period-len(self.pattern)) > (start_up + period_up):
+          self.right_off = self.right_off_g.copy()
+    lo = self.left_off  - X[0,0:2]
+    ro = self.right_off - X[0,0:2]
+    left_foot  = [self. left_foot0[0]+lo[0,0], self. left_foot0[1]+lo[0,1], self. left_foot0[2]+self.left_up , 0.0, 0.0, 0.0]
+    right_foot = [self.right_foot0[0]+ro[0,0], self.right_foot0[1]+ro[0,1], self.right_foot0[2]+self.right_up, 0.0, 0.0, 0.0]
     self.joint_angles = self.kine.solve_ik(left_foot, right_foot, self.joint_angles)
     xp = [X[0,2], X[0,3]]
     #gyro feedback
