@@ -18,9 +18,10 @@ class walking():
     self.pc = pc
     self.X = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
     self.pattern = []
-    self.foot_step = [[0.0, 0.0, 0.0], [0.34, 0.0, 0.06], [0.68, 0.05, -0.06], [1.02, 0.10, 0.06], [1.36, 0.15, -0.06]]
+    self.foot_step = [[0.0, 0.0, 0.0], [0.34, 0.0, 0.06], [0.6, 0.0, -0.06], [1.02, 0.0, 0.06], [1.36, 0.0, -0.06]]
     self.left_up = self.right_up = 0.0
     self.is_first = True
+    self.gyro_pitch = self.gyro_roll = 0.0
     return
 
   def setGoalPos(self, pos):
@@ -29,41 +30,48 @@ class walking():
       td = self.foot_step[0][0]
       xd = self.foot_step[0][1]
       for i in range(len(self.foot_step)):
-        self.foot_step[i] = [self.foot_step[i][0]-td, self.foot_step[i][1]-xd, self.foot_step[i][2]]
+        self.foot_step[i] = [round(self.foot_step[i][0]-td,2), round(self.foot_step[i][1]-xd,2), round(self.foot_step[i][2],2)]
     self.is_first = False
-    self.foot_step += [[self.foot_step[4][0]+0.34, self.foot_step[4][1]+0.05, -self.foot_step[4][2]]]
-#    print(self.foot_step)
+    self.foot_step += [[round(self.foot_step[4][0]+0.34,2), self.foot_step[4][1], -self.foot_step[4][2]]]
+    print(str(self.foot_step)+'\n')
     self.X[0] = [self.X[0][0]-self.foot_step[0][1], self.X[0][1]]
-#    print(self.X[0])
     self.pattern, x, y = self.pc.set_param(self.X[0], self.X[1], self.X[2], self.foot_step)
     self.X = [[x[0,0], y[0,0]], [x[1,0], y[1,0]], [x[2,0], y[2,0]]]
     return self.pattern
 
   def getNextPos(self):
     X = self.pattern.pop(0)
-    period = int(self.foot_step[1][0]/0.01+0.005)
+    period = round(self.foot_step[1][0]/0.01)
     x_dir = 0
-    if self.foot_step[0][2] > 0:
-      if (period-len(self.pattern)) < period/2:
-        self.left_up  += 0.04/(period/2)
-      elif self.left_up > 0:
-        self.left_up  -= 0.04/(period/2)
-      else:
-        self.left_up  = 0.0
-      x_dir = 1
+    BOTH_FOOT = round(0.06/0.01)
+    start_up = round(BOTH_FOOT/2)
+    end_up   = round(period/2)
+    period_up = end_up - start_up
+    foot_hight = 0.04
     if self.foot_step[0][2] < 0:
-      if (period-len(self.pattern)) < period/2:
-        self.right_up += 0.04/(period/2)
+      if start_up < (period-len(self.pattern)) <= end_up:
+        self.left_up  += foot_hight/period_up
+      elif self.left_up > 0:
+        self.left_up  = max(self.left_up  - foot_hight/period_up, 0.0)
+    if self.foot_step[0][2] > 0:
+      if start_up < (period-len(self.pattern)) <= end_up:
+        self.right_up += foot_hight/period_up
       elif self.right_up > 0:
-        self.right_up -= 0.04/(period/2)
+        self.right_up = max(self.right_up - foot_hight/period_up, 0.0)
       else:
         self.right_up = 0.0
-      x_dir = -1
-#    print(X)
-    left_foot  = [self. left_foot0[0]+x_dir*X[0,0], self. left_foot0[1]+X[0,1], self. left_foot0[2]+self.left_up , 0.0, 0.0, 0.0]
-    right_foot = [self.right_foot0[0]+x_dir*X[0,0], self.right_foot0[1]+X[0,1], self.right_foot0[2]+self.right_up, 0.0, 0.0, 0.0]
+    left_foot  = [self. left_foot0[0]-X[0,0], self. left_foot0[1]-X[0,1], self. left_foot0[2]+self.left_up , 0.0, 0.0, 0.0]
+    right_foot = [self.right_foot0[0]-X[0,0], self.right_foot0[1]-X[0,1], self.right_foot0[2]+self.right_up, 0.0, 0.0, 0.0]
     self.joint_angles = self.kine.solve_ik(left_foot, right_foot, self.joint_angles)
-    return self.joint_angles, left_foot, right_foot, len(self.pattern)
+    xp = [X[0,2], X[0,3]]
+    #gyro feedback
+    pos,ori,loc_pos,dummy,dummy,loc_ori,vel,ang_vel = p.getLinkState(RobotId, index[ 'body_link'],1)
+#    body_angles = p.getEulerFromQuaternion(loc_ori)
+#    self.gyro_pitch = 0.9 * self.gyro_pitch + 0.1 * ang_vel[1] * 0.2 # <- TODO:convert
+#    self.gyro_roll  = 0.0 * self.gyro_roll  + 1.0 * ang_vel[0] * 0.05
+    self.joint_angles[index_dof['left_ankle_roll_link' ]] += self.gyro_roll
+    self.joint_angles[index_dof['right_ankle_roll_link']] += self.gyro_roll
+    return self.joint_angles, left_foot, right_foot, xp, len(self.pattern)
 
 if __name__ == '__main__':
   TIME_STEP = 0.001
@@ -88,7 +96,7 @@ if __name__ == '__main__':
   left_foot  = [ left_foot0[0]-0.015,  left_foot0[1]+0.01,  left_foot0[2]+0.02]
   right_foot = [right_foot0[0]-0.015, right_foot0[1]-0.01, right_foot0[2]+0.02]
 
-  pc = preview_control(0.01, 1.0, 0.29)
+  pc = preview_control(0.01, 1.0, 0.25)
 
   walk = walking(RobotId, left_foot, right_foot, joint_angles, pc)
 
@@ -103,14 +111,15 @@ if __name__ == '__main__':
   while p.isConnected():
     j += 1
     if j >= 10:
-      joint_angles,lf,rf,n = walk.getNextPos()
+      joint_angles,lf,rf,xp,n = walk.getNextPos()
       with open('result.csv', mode='a') as f:
-#        f.writerow(lf)+str(r for r in np.ravel(rf).tolist())+'\n')
         writer = csv.writer(f)
-        writer.writerow(np.concatenate([lf, rf]))
+        writer.writerow(np.concatenate([lf, rf, xp]))
       j = 0
       if n == 0:
         walk.setGoalPos(0)
+        with open('result.csv', mode='a') as f:
+          f.write('\n')
     for id in range(p.getNumJoints(RobotId)):
       qIndex = p.getJointInfo(RobotId, id)[3]
       if qIndex > -1:
@@ -118,4 +127,4 @@ if __name__ == '__main__':
 
     p.stepSimulation()
 #    sleep(0.01)
-#    sleep(TIME_STEP)
+    sleep(TIME_STEP)
