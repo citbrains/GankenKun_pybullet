@@ -12,33 +12,32 @@ class foot_step_planner():
     self.period = period
     self.width = width
 
-  def calculate(self, goal_x, goal_y, goal_th, next_support_leg, status):
+  def calculate(self, goal_x, goal_y, goal_th, current_x, current_y, current_th, next_support_leg, status):
     # calculate the number of foot step
     time = 0.0
-    goal_distance = math.sqrt(goal_x**2 + goal_y**2)
-    step_x  = abs(goal_x )/self.max_stride_x
-    step_y  = abs(goal_y )/self.max_stride_y
-    step_th = abs(goal_th)/self.max_stride_th
+    goal_distance = math.sqrt((goal_x-current_x)**2 + (goal_y-current_y)**2)
+    step_x  = abs(goal_x  - current_x )/self.max_stride_x
+    step_y  = abs(goal_y  - current_y )/self.max_stride_y
+    step_th = abs(goal_th - current_th)/self.max_stride_th
     max_step = max(step_x, step_y, step_th)
-    stride_x  = goal_x /max_step
-    stride_y  = goal_y /max_step
-    stride_th = goal_th/max_step
+    stride_x  = (goal_x  - current_x )/max_step
+    stride_y  = (goal_y  - current_y )/max_step
+    stride_th = (goal_th - current_th)/max_step
 
     # first step
     foot_step = []
     if status == 'start':
-      foot_step += [[0.0, 0.0, 0.0, 0.0, 'both']]
+      foot_step += [[0.0, current_x, current_y, current_th, 'both']]
       time += self.period * 2.0
     if next_support_leg == 'right':
-      foot_step += [[time, 0.0, -self.width, 0.0, next_support_leg]]
+      foot_step += [[time, current_x, -self.width+current_y, current_th, next_support_leg]]
       next_support_leg = 'left'
     elif next_support_leg == 'left':
-      foot_step += [[time, 0.0,  self.width, 0.0, next_support_leg]]
+      foot_step += [[time, current_x,  self.width+current_y, current_th, next_support_leg]]
       next_support_leg = 'right'
 
     # walking
     counter = 0
-    current_x = current_y = current_th = 0.0
     while True:
       counter += 1
       diff_x  = abs(goal_x  - current_x )
@@ -71,11 +70,13 @@ class foot_step_planner():
       foot_step += [[time, next_x, next_y, next_th, next_support_leg]]
       time += 2.0
       foot_step += [[time, next_x, next_y, next_th, next_support_leg]]
+      time += 100.0
+      foot_step += [[time, next_x, next_y, next_th, next_support_leg]]
 
     return foot_step
 
 if __name__ == '__main__':
   planner = foot_step_planner(0.06, 0.04, 0.1, 0.34, 0.044)
-  foot_step = planner.calculate(1.0, 0.0, 0.5, 'right', 'start')
+  foot_step = planner.calculate(1.0, 0.0, 0.5, 0.5, 0.0, 0.1, 'right', 'start')
   for i in foot_step:
     print(i)

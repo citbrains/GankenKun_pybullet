@@ -30,19 +30,22 @@ class walking():
 
   def setGoalPos(self, pos = None):
     if pos == None:
-      if len(self.foot_step) <= 2:
+      if len(self.foot_step) <= 4:
         self.status = 'start'
       if len(self.foot_step) > 3:
         del self.foot_step[0]
     else:
       if len(self.foot_step) > 2:
-        offset_y = -0.06 if self.next_leg == 'left' else 0.06
+        if not self.status == 'start':
+          offset_y = -0.06 if self.next_leg == 'left' else 0.06
+        else:
+          offset_y = 0.0
         current_x, current_y, current_th = self.foot_step[1][1], self.foot_step[1][2]+offset_y, self.foot_step[1][3]
       else:
         current_x, current_y, current_th = 0, 0, 0
       self.foot_step = self.fsp.calculate(pos[0], pos[1], pos[2], current_x, current_y, current_th, self.next_leg, self.status)
-    self.status = 'walking'
-    print(str(self.foot_step)+'\n')
+      self.status = 'walking'
+#    print(str(self.foot_step)+'\n')
     t = self.foot_step[0][0]
     self.pattern, x, y = self.pc.set_param(t, self.X[:,0], self.X[:,1], self.foot_step)
     self.X = np.matrix([[x[0,0], y[0,0]], [x[1,0], y[1,0]], [x[2,0], y[2,0]]])
@@ -150,7 +153,7 @@ if __name__ == '__main__':
       j = 0
       if n == 0:
         if (len(foot_step) <= 6):
-          foot_step = walk.setGoalPos([foot_step[0][1]+0.4, 0.0, 0.0])
+          foot_step = walk.setGoalPos([foot_step[0][1]+0.4, foot_step[0][2] + 0.1, foot_step[0][3] + 0.5])
           print("send new target *************************")
         else:
           foot_step = walk.setGoalPos()
