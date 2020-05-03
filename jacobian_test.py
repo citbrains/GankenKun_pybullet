@@ -58,21 +58,26 @@ while p.isConnected():
   tar_right_foot_pos = (right_foot_pos0[0], right_foot_pos0[1], height)
   joint_angle = list(p.calculateInverseKinematics(RobotId, index['left_foot_link' ], tar_left_foot_pos ,   left_foot_ori0 , currentPositions=joint_angle))
   joint_angle = list(p.calculateInverseKinematics(RobotId, index['right_foot_link' ], tar_right_foot_pos,   right_foot_ori0, currentPositions=joint_angle))
-  joint_angle[index_dof['left_shin_pitch_link'  ]] = -joint_angle[index_dof['left_waist_pitch_link' ]]
-  joint_angle[index_dof['left_ankle_pitch_link' ]] = -joint_angle[index_dof['left_knee_pitch_link'  ]]
-  joint_angle[index_dof['right_shin_pitch_link' ]] = -joint_angle[index_dof['right_waist_pitch_link']]
-  joint_angle[index_dof['right_ankle_pitch_link']] = -joint_angle[index_dof['right_knee_pitch_link' ]]
-  joint_angle[index_dof['left_shin_pitch_mimic_link'  ]] = -joint_angle[index_dof['left_waist_pitch_link' ]]
-  joint_angle[index_dof['left_waist_pitch_mimic_link' ]] = -joint_angle[index_dof['left_knee_pitch_link'  ]]
-  joint_angle[index_dof['right_shin_pitch_mimic_link' ]] = -joint_angle[index_dof['right_waist_pitch_link']]
-  joint_angle[index_dof['right_waist_pitch_mimic_link']] = -joint_angle[index_dof['right_knee_pitch_link' ]]
+  joint_angle[index_dof['left_waist_pitch_mimic_link' ]] =  joint_angle[index_dof['left_waist_pitch_link' ]]
+  joint_angle[index_dof['left_knee_pitch_link'        ]] = -joint_angle[index_dof['left_waist_pitch_link' ]]
+  joint_angle[index_dof['left_shin_pitch_mimic_link'  ]] =  joint_angle[index_dof['left_shin_pitch_link'  ]]
+  joint_angle[index_dof['left_independent_pitch_link' ]] = -joint_angle[index_dof['left_shin_pitch_link'  ]]
+  joint_angle[index_dof['right_waist_pitch_mimic_link']] =  joint_angle[index_dof['right_waist_pitch_link']]
+  joint_angle[index_dof['right_knee_pitch_link'       ]] = -joint_angle[index_dof['right_waist_pitch_link']]
+  joint_angle[index_dof['right_shin_pitch_mimic_link' ]] =  joint_angle[index_dof['right_shin_pitch_link' ]]
+  joint_angle[index_dof['right_independent_pitch_link']] = -joint_angle[index_dof['right_shin_pitch_link' ]]
 
   # calculate Jacobian
-  left_foot_pos = p.getLinkState(RobotId, index['left_foot_link'])[0]
+  left_foot_pos = p.getLinkState(RobotId, index['left_ankle_roll_link'])[0]
   zero = [0.0] * len(joint_angle)
   left_jaco_t, left_jaco_r = np.array(p.calculateJacobian(
-    RobotId, index['left_foot_link'], left_foot_pos, joint_angle, zero, zero))
+    RobotId, index['left_ankle_roll_link'], left_foot_pos, joint_angle, zero, zero))
   
+  left_jaco_t[:,index_dof['left_waist_pitch_link']+6] -= left_jaco_t[:,index_dof['left_knee_pitch_link']+6]
+  left_jaco_r[:,index_dof['left_waist_pitch_link']+6] -= left_jaco_r[:,index_dof['left_knee_pitch_link']+6]
+  left_jaco_t[:,index_dof['left_shin_pitch_link']+6] -= left_jaco_t[:,index_dof['left_independent_pitch_link']+6]
+  left_jaco_r[:,index_dof['left_shin_pitch_link']+6] -= left_jaco_r[:,index_dof['left_independent_pitch_link']+6]
+
   extract_element = [False] * len(left_jaco_t[0])
   extract_joints = ['left_waist_yaw_link', 'left_waist_roll_link', 'left_waist_pitch_link',
     'left_shin_pitch_link', 'left_ankle_pitch_link', 'left_ankle_roll_link']
