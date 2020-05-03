@@ -18,79 +18,76 @@ class walking():
     self.pc = pc
     self.X = np.matrix([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])
     self.pattern = []
-    self.foot_step = [[0.0, 0.0, 0.0,'both'], [0.34, 0.0, 0.06,'left'], [0.68, 0.0, -0.06 + 0.005,'right'], [1.02, 0.0, 0.06 + 0.01,'left'], [1.36, 0.0, -0.06 + 0.015,'right']]
+    self.foot_step = [[0.0, 0.0, 0.0, 0.0, 'both'], [0.34, 0.0, 0.06, 0.00,'left'], [0.68, 0.05, -0.06 - 0.0, 0.1, 'right'], [1.02, 0.10, 0.06 - 0.0, 0.2, 'left'], [1.36, 0.15, -0.06 - 0.0, 0.3, 'right']]
     self.left_up = self.right_up = 0.0
     self.is_first = True
-#    self.gyro_pitch = self.gyro_roll = 0.0
-    self.left_off,  self.left_off_g,  self.left_off_d  = np.matrix([[0.0, 0.0]]),  np.matrix([[0.0, 0.0]]),  np.matrix([[0.0, 0.0]]) 
-    self.right_off, self.right_off_g, self.right_off_d = np.matrix([[0.0, 0.0]]),  np.matrix([[0.0, 0.0]]),  np.matrix([[0.0, 0.0]])
+    self.left_off,  self.left_off_g,  self.left_off_d  = np.matrix([[0.0, 0.0, 0.0]]),  np.matrix([[0.0, 0.0, 0.0]]),  np.matrix([[0.0, 0.0, 0.0]]) 
+    self.right_off, self.right_off_g, self.right_off_d = np.matrix([[0.0, 0.0, 0.0]]),  np.matrix([[0.0, 0.0, 0.0]]),  np.matrix([[0.0, 0.0, 0.0]])
+    self.th = 0
     return
 
   def setGoalPos(self, pos):
     if self.is_first == False:
       del self.foot_step[0]
       for i in range(len(self.foot_step)):
-        self.foot_step[i] = [round(self.foot_step[i][0],2), round(self.foot_step[i][1],2), round(self.foot_step[i][2],2), self.foot_step[i][3]]
+        self.foot_step[i] = [round(self.foot_step[i][0],2), round(self.foot_step[i][1],2), round(self.foot_step[i][2],2), round(self.foot_step[i][3],2), self.foot_step[i][4]]
     self.is_first = False
-    side_foot = 0.005 + self.foot_step[4][2] + (-0.12 if self.foot_step[4][3]=='left' else 0.12)
-    self.foot_step += [[round(self.foot_step[4][0]+0.34,2), round(self.foot_step[4][1]+0.0,2), side_foot, 'right' if self.foot_step[4][3]=='left' else 'left']]
+    side_foot = 0.0 + self.foot_step[4][2] + (-0.12 if self.foot_step[4][4]=='left' else 0.12)
+    self.foot_step += [[round(self.foot_step[4][0]+0.34,2), round(self.foot_step[4][1]+0.05,2), side_foot, round(self.foot_step[4][3]+0.1,2), 'right' if self.foot_step[4][4]=='left' else 'left']]
     
     print(str(self.foot_step)+'\n')
     t = self.foot_step[0][0]
     self.pattern, x, y = self.pc.set_param(t, self.X[:,0], self.X[:,1], self.foot_step)
     self.X = np.matrix([[x[0,0], y[0,0]], [x[1,0], y[1,0]], [x[2,0], y[2,0]]])
-    if self.foot_step[0][3] == 'left':
-      self.right_off_g = np.matrix([[self.foot_step[1][1], self.foot_step[1][2]+0.06]])
-      self.right_off_d = (self.right_off_g-self.right_off)/17.0
-    if self.foot_step[0][3] == 'right':
-      self.left_off_g  = np.matrix([[self.foot_step[1][1], self.foot_step[1][2]-0.06]])
+    if self.foot_step[0][4] == 'left':
+      self.right_off_g = np.matrix([[self.foot_step[1][1], self.foot_step[1][2]+0.06, self.foot_step[1][3]]])
+      self.right_off_d = (self.right_off_g - self.right_off)/17.0
+    if self.foot_step[0][4] == 'right':
+      self.left_off_g  = np.matrix([[self.foot_step[1][1], self.foot_step[1][2]-0.06, self.foot_step[1][3]]])
       self.left_off_d  = (self.left_off_g - self.left_off)/17.0
+    self.th = self.foot_step[0][3]
     return self.pattern
 
   def getNextPos(self):
     X = self.pattern.pop(0)
     period = round((self.foot_step[1][0]-self.foot_step[0][0])/0.01)
+    print(self.th)
+    self.th += (self.foot_step[1][3]-self.foot_step[0][3])/period
     x_dir = 0
     BOTH_FOOT = round(0.17/0.01)
     start_up = round(BOTH_FOOT/2)
     end_up   = round(period/2)
     period_up = end_up - start_up
     foot_hight = 0.06
-    if self.foot_step[0][2] < 0:
+    if self.foot_step[0][4] == 'right':
+      # up or down foot
       if start_up < (period-len(self.pattern)) <= end_up:
         self.left_up  += foot_hight/period_up
       elif self.left_up > 0:
         self.left_up  = max(self.left_up  - foot_hight/period_up, 0.0)
-      # move foot foward or backward
+      # move foot in the axes of x,y,the
       if (period-len(self.pattern)) > start_up:
         self.left_off += self.left_off_d
         if (period-len(self.pattern)) > (start_up + period_up * 2):
           self.left_off = self.left_off_g.copy()
-    if self.foot_step[0][2] > 0:
+    if self.foot_step[0][4] == 'left':
+      # up or down foot
       if start_up < (period-len(self.pattern)) <= end_up:
         self.right_up += foot_hight/period_up
       elif self.right_up > 0:
         self.right_up = max(self.right_up - foot_hight/period_up, 0.0)
-      else:
-        self.right_up = 0.0
-      # move foot foward or backward
+      # move foot in the axes of x,y,the
       if (period-len(self.pattern)) > start_up:
         self.right_off += self.right_off_d
         if (period-len(self.pattern)) > (start_up + period_up * 2):
           self.right_off = self.right_off_g.copy()
-    lo = self.left_off  - X[0,0:2]
-    ro = self.right_off - X[0,0:2]
-    left_foot  = [self. left_foot0[0]+lo[0,0], self. left_foot0[1]+lo[0,1], self. left_foot0[2]+self.left_up , 0.0, 0.0, 0.0]
-    right_foot = [self.right_foot0[0]+ro[0,0], self.right_foot0[1]+ro[0,1], self.right_foot0[2]+self.right_up, 0.0, 0.0, 0.0]
+    lo = self.left_off  - np.block([[X[0,0:2],0]])
+    ro = self.right_off - np.block([[X[0,0:2],0]])
+    left_foot  = [self. left_foot0[0]+lo[0,0], self. left_foot0[1]+lo[0,1], self. left_foot0[2]+self.left_up , 0.0, 0.0, self.th-lo[0,2]]
+    right_foot = [self.right_foot0[0]+ro[0,0], self.right_foot0[1]+ro[0,1], self.right_foot0[2]+self.right_up, 0.0, 0.0, self.th-ro[0,2]]
     self.joint_angles = self.kine.solve_ik(left_foot, right_foot, self.joint_angles)
     xp = [X[0,2], X[0,3]]
-    #gyro feedback
-#    pos,ori,loc_pos,dummy,dummy,loc_ori,vel,ang_vel = p.getLinkState(RobotId, index[ 'body_link'],1)
-#    body_angles = p.getEulerFromQuaternion(loc_ori)
-#    self.gyro_pitch = 0.9 * self.gyro_pitch + 0.1 * ang_vel[1] * 0.2 # <- TODO:convert
-#    self.gyro_roll  = 0.0 * self.gyro_roll  + 1.0 * ang_vel[0] * 0.05
-#    self.joint_angles[index_dof['left_ankle_roll_link' ]] += self.gyro_roll
-#    self.joint_angles[index_dof['right_ankle_roll_link']] += self.gyro_roll
+
     return self.joint_angles, left_foot, right_foot, xp, len(self.pattern)
 
 if __name__ == '__main__':
@@ -132,6 +129,7 @@ if __name__ == '__main__':
     j += 1
     if j >= 10:
       joint_angles,lf,rf,xp,n = walk.getNextPos()
+      print(joint_angles)
       with open('result.csv', mode='a') as f:
         writer = csv.writer(f)
         writer.writerow(np.concatenate([lf, rf, xp]))
@@ -147,4 +145,4 @@ if __name__ == '__main__':
 
     p.stepSimulation()
 #    sleep(0.01)
-    sleep(TIME_STEP)
+#    sleep(TIME_STEP)
