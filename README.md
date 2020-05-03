@@ -3,7 +3,9 @@
 ![GankenKun](https://user-images.githubusercontent.com/5755200/79035466-fd011080-7bf9-11ea-807a-227fc551c4ad.jpg)
 
 ### Video
-https://youtu.be/kJb6OzS1FoM
+https://youtu.be/kJb6OzS1FoM  
+latter half: comment out `sleep`  
+Computer: Core i5 + GTX1060
 
 ### main program
 
