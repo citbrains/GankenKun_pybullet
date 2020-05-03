@@ -16,7 +16,7 @@ class walking():
     self.left_foot0, self.right_foot0 = left_foot0, right_foot0
     self.joint_angles = joint_angles
     self.pc = pc
-    self.X = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
+    self.X = np.matrix([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])
     self.pattern = []
     self.foot_step = [[0.0, 0.0, 0.0,'both'], [0.34, 0.0, 0.06,'left'], [0.68, 0.05, -0.06,'right'], [1.02, 0.10, 0.06,'left'], [1.36, 0.15, -0.06,'right']]
     self.left_up = self.right_up = 0.0
@@ -29,34 +29,32 @@ class walking():
   def setGoalPos(self, pos):
     if self.is_first == False:
       del self.foot_step[0]
-      td = self.foot_step[0][0]
-      xd = self.foot_step[0][1]
       for i in range(len(self.foot_step)):
-        self.foot_step[i] = [round(self.foot_step[i][0]-td,2), round(self.foot_step[i][1],2), round(self.foot_step[i][2],2), self.foot_step[i][3]]
+        self.foot_step[i] = [round(self.foot_step[i][0],2), round(self.foot_step[i][1],2), round(self.foot_step[i][2],2), self.foot_step[i][3]]
     self.is_first = False
     self.foot_step += [[round(self.foot_step[4][0]+0.34,2), round(self.foot_step[4][1]+0.05,2), -self.foot_step[4][2], 'right' if self.foot_step[4][3]=='left' else 'left']]
     
     print(str(self.foot_step)+'\n')
-    self.X[0] = [self.X[0][0]-self.foot_step[0][1], self.X[0][1]]
-    self.pattern, x, y = self.pc.set_param(0,self.X[0], self.X[1], self.X[2], self.foot_step)
-    self.X = [[x[0,0], y[0,0]], [x[1,0], y[1,0]], [x[2,0], y[2,0]]]
+#    self.X[0,0], self.X[0,1] = self.X[0,0]-self.foot_step[0][1], self.X[0,1]
+    t = self.foot_step[0][0]
+    self.pattern, x, y = self.pc.set_param(t, self.X[:,0], self.X[:,1], self.foot_step)
+    self.X = np.matrix([[x[0,0], y[0,0]], [x[1,0], y[1,0]], [x[2,0], y[2,0]]])
     if self.foot_step[0][3] == 'left':
-      self.right_off_g = np.matrix([[self.foot_step[1][1] - self.foot_step[0][1], self.foot_step[1][2] - self.foot_step[0][2]+0.12]])
-      self.left_off, self.left_off_g  = np.matrix([[0.0, 0.0]]), np.matrix([[0.0, 0.0]])
-      self.right_off_d = self.right_off_g / 28
+      self.right_off_g = np.matrix([[self.foot_step[1][1], self.foot_step[1][2]+0.06]])
+#      self.left_off, self.left_off_g  = np.matrix([[0.0, 0.0]]), np.matrix([[0.0, 0.0]])
+      self.right_off_d = (self.right_off_g-self.right_off)/17.0
     if self.foot_step[0][3] == 'right':
-      self.left_off_g  = np.matrix([[self.foot_step[1][1] - self.foot_step[0][1], self.foot_step[1][2] - self.foot_step[0][2]-0.12]])
-      self.right_off_g, self.right_off_g  = np.matrix([[0.0, 0.0]]), np.matrix([[0.0, 0.0]])
-      self.left_off_d  = self.left_off_g / 28
+      self.left_off_g  = np.matrix([[self.foot_step[1][1], self.foot_step[1][2]-0.06]])
+#      self.right_off, self.right_off_g  = np.matrix([[0.0, 0.0]]), np.matrix([[0.0, 0.0]])
+      self.left_off_d  = (self.left_off_g - self.left_off)/17.0
     print(self.left_off_g, self.right_off_g)
-#    self.left_off_g = [foot_step[1][0], foot_step[1][1]]
     return self.pattern
 
   def getNextPos(self):
     X = self.pattern.pop(0)
-    period = round(self.foot_step[1][0]/0.01)
+    period = round((self.foot_step[1][0]-self.foot_step[0][0])/0.01)
     x_dir = 0
-    BOTH_FOOT = round(0.06/0.01)
+    BOTH_FOOT = round(0.17/0.01)
     start_up = round(BOTH_FOOT/2)
     end_up   = round(period/2)
     period_up = end_up - start_up
@@ -66,9 +64,10 @@ class walking():
         self.left_up  += foot_hight/period_up
       elif self.left_up > 0:
         self.left_up  = max(self.left_up  - foot_hight/period_up, 0.0)
-      if start_up < (period-len(self.pattern)):
+      # move foot foward or backward
+      if (period-len(self.pattern)) > start_up:
         self.left_off += self.left_off_d
-        if (period-len(self.pattern)) > (start_up + period_up):
+        if (period-len(self.pattern)) > (start_up + period_up * 2):
           self.left_off = self.left_off_g.copy()
     if self.foot_step[0][2] > 0:
       if start_up < (period-len(self.pattern)) <= end_up:
@@ -77,9 +76,14 @@ class walking():
         self.right_up = max(self.right_up - foot_hight/period_up, 0.0)
       else:
         self.right_up = 0.0
-      if start_up < (period-len(self.pattern)):
+      # move foot foward or backward
+      if (period-len(self.pattern)) > start_up:
+        print("right_off_in: "+str(self.right_off)+str(self.right_off_d))
         self.right_off += self.right_off_d
-        if (period-len(self.pattern)) > (start_up + period_up):
+#        print("period-len(self.pattern): "+str(period-len(self.pattern)))
+#        print("(start_up + period_up): "+str(start_up + period_up * 2))
+        if (period-len(self.pattern)) > (start_up + period_up * 2):
+          print("self.right_off_g.copy(): "+str(self.right_off_g))
           self.right_off = self.right_off_g.copy()
     lo = self.left_off  - X[0,0:2]
     ro = self.right_off - X[0,0:2]
@@ -116,10 +120,12 @@ if __name__ == '__main__':
   for id in range(p.getNumJoints(RobotId)):
     if p.getJointInfo(RobotId, id)[3] > -1:
       joint_angles += [0,]
-  left_foot  = [ left_foot0[0]-0.015,  left_foot0[1]+0.01,  left_foot0[2]+0.02]
-  right_foot = [right_foot0[0]-0.015, right_foot0[1]-0.01, right_foot0[2]+0.02]
+  left_foot  = [ left_foot0[0]-0.018,  left_foot0[1]+0.01,  left_foot0[2]+0.02]
+  right_foot = [right_foot0[0]-0.018, right_foot0[1]-0.01, right_foot0[2]+0.02]
+#  left_foot  = [ left_foot0[0]-0.015,  left_foot0[1]+0.01,  left_foot0[2]+0.02]
+#  right_foot = [right_foot0[0]-0.015, right_foot0[1]-0.01, right_foot0[2]+0.02]
 
-  pc = preview_control(0.01, 1.0, 0.25)
+  pc = preview_control(0.01, 1.0, 0.27)
 
   walk = walking(RobotId, left_foot, right_foot, joint_angles, pc)
 
@@ -147,7 +153,11 @@ if __name__ == '__main__':
       qIndex = p.getJointInfo(RobotId, id)[3]
       if qIndex > -1:
         p.setJointMotorControl2(RobotId, id, p.POSITION_CONTROL, joint_angles[qIndex-7])
+#        if id == index['left_ankle_roll_link'] or id == index['right_ankle_roll_link']:
+#          p.setJointMotorControl2(RobotId, id, p.POSITION_CONTROL, joint_angles[qIndex-7], force = 1)
+#        else:
+#          p.setJointMotorControl2(RobotId, id, p.POSITION_CONTROL, joint_angles[qIndex-7])
 
     p.stepSimulation()
 #    sleep(0.01)
-    sleep(TIME_STEP)
+#    sleep(TIME_STEP)
