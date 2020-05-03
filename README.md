@@ -3,7 +3,12 @@
 ![GankenKun](https://user-images.githubusercontent.com/5755200/79035466-fd011080-7bf9-11ea-807a-227fc551c4ad.jpg)
 
 ### Video
-https://youtu.be/OyXb8-gacv8
+https://youtu.be/kJb6OzS1FoM
+
+### main program
+
+- GankenKun.py
+Walking control to the target position
 
 ### sample program
 
