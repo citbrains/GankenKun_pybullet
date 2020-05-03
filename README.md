@@ -7,7 +7,7 @@ https://youtu.be/kJb6OzS1FoM
 
 ### main program
 
-- GankenKun.py
+- GankenKun.py  
 Walking control to the target position
 
 ### sample program
