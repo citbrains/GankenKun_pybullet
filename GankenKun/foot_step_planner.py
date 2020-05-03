@@ -56,7 +56,7 @@ class foot_step_planner():
       elif next_support_leg == 'left':
         foot_step += [[time, next_x, next_y+self.width, next_th, next_support_leg]]
         next_support_leg = 'right'
-      current_x, current_y, current_the = next_x, next_y, next_th
+      current_x, current_y, current_th = next_x, next_y, next_th
 
     # last step
     next_x, next_y, next_th = goal_x, goal_y, goal_th
@@ -76,5 +76,6 @@ class foot_step_planner():
 
 if __name__ == '__main__':
   planner = foot_step_planner(0.06, 0.04, 0.1, 0.34, 0.044)
-  foot_step = planner.calculate(0.3, 0.0, 0.0, 'right', 'start')
-  print(foot_step)
+  foot_step = planner.calculate(1.0, 0.0, 0.5, 'right', 'start')
+  for i in foot_step:
+    print(i)
