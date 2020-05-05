@@ -8,9 +8,9 @@ latter half: comment out `sleep`
 Computer: Core i5 + GTX1060
 
 Execute on Google Colaboratory  
-https://youtu.be/Xlq8RnlAz9E  
-Google Colaboratory  
 https://colab.research.google.com/drive/1N14EQQQPXsDvagGHN7Aw26GeYP6iAH_J?usp=sharing  
+
+![result](https://user-images.githubusercontent.com/5755200/81090186-4eba6380-8f38-11ea-81f7-fc7bffd33c21.gif)
 
 ### main program
 
