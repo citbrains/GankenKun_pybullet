@@ -12,7 +12,31 @@ Computer: Core i5 + GTX1060
 - GankenKun.py  
 Walking control to the target position
 
-### sample program
+### library for GankenKun
+
+GankenKun/  
+
+- kinematics.py  
+Calculating the inverse kinematics based on the analytical solution  
+(foot position -> joint angles)  
+
+- foot_step_planner.py  
+Calculating the footsteps from the goal position  
+
+- preview_control.py  
+Generating the trajectory of the center of mass from the footsteps based on the preview controller  
+
+- walking.py  
+Calculating the trajectory of the foot from the goal position  
+
+### What is GankenKun
+
+GankenKun is an open platform humanoid robot developed by CIT Brains (Chiba Institute of Technology).  
+The robot had won the prize in RoboCup.  
+
+https://github.com/citbrains/OpenPlatform
+
+### other programs (developed for understanding pybullet)  
 
 - display.py  
 Displaying the humanoid robot GankenKun
