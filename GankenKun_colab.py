@@ -11,10 +11,11 @@ from walking import *
 from random import random 
 from time import sleep
 import csv
+from PIL import Image
 
 if __name__ == '__main__':
   TIME_STEP = 0.001
-  physicsClient = p.connect(p.GUI)
+  physicsClient = p.connect(p.DIRECT)
   p.setGravity(0, 0, -9.8)
   p.setTimeStep(TIME_STEP)
 
@@ -45,8 +46,11 @@ if __name__ == '__main__':
 
   #goal position (x, y) theta
   foot_step = walk.setGoalPos([0.4, 0.0, 0.5])
-  j = 0
-  while p.isConnected():
+  j, k = 0, 0
+#  while p.isConnected():
+  camera_img = p.getCameraImage(320,320)
+  imgs = [Image.fromarray(camera_img[2])]
+  for i in range(20000):
     j += 1
     if j >= 10:
       joint_angles,lf,rf,xp,n = walk.getNextPos()
@@ -63,6 +67,16 @@ if __name__ == '__main__':
       qIndex = p.getJointInfo(RobotId, id)[3]
       if qIndex > -1:
         p.setJointMotorControl2(RobotId, id, p.POSITION_CONTROL, joint_angles[qIndex-7])
-
+    
+    k += 1
+    if k >= 33:
+      k = 0
+      camera_img = p.getCameraImage(320,320)
+      imgs.append(Image.fromarray(camera_img[2]))
+    
     p.stepSimulation()
 #    sleep(TIME_STEP) # delete -> speed up
+
+p.disconnect()
+imgs[0].save("result.gif", save_all = True, append_images = imgs[1:], duration=20, loop = 0)
+
