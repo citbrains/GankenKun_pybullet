@@ -36,6 +36,10 @@ The robot had won the prize in RoboCup.
 
 https://github.com/citbrains/OpenPlatform
 
+### Execute on Google Colaboratory
+
+https://colab.research.google.com/drive/1N14EQQQPXsDvagGHN7Aw26GeYP6iAH_J?usp=sharing
+
 ### other programs (developed for understanding pybullet)  
 
 - display.py  
