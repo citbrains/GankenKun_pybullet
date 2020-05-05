@@ -7,6 +7,11 @@ https://youtu.be/kJb6OzS1FoM
 latter half: comment out `sleep`  
 Computer: Core i5 + GTX1060
 
+Execute on Google Colaboratory  
+https://youtu.be/Xlq8RnlAz9E  
+Google Colaboratory  
+https://colab.research.google.com/drive/1N14EQQQPXsDvagGHN7Aw26GeYP6iAH_J?usp=sharing  
+
 ### main program
 
 - GankenKun.py  
@@ -35,10 +40,6 @@ GankenKun is an open platform humanoid robot developed by CIT Brains (Chiba Inst
 The robot had won the prize in RoboCup.  
 
 https://github.com/citbrains/OpenPlatform
-
-### Execute on Google Colaboratory
-
-https://colab.research.google.com/drive/1N14EQQQPXsDvagGHN7Aw26GeYP6iAH_J?usp=sharing
 
 ### other programs (developed for understanding pybullet)  
 
