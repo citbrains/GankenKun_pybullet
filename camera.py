@@ -47,7 +47,7 @@ while p.isConnected():
   if angle <= 0.0:
     velocity *= -1.0
 
-  cam_pos, cam_quat = p.getLinkState(RobotId, index['camera_link'])[:2]
+  cam_pos, cam_quat = p.getLinkState(RobotId, index['camera_link'], False, True)[:2]
   rotMat = p.getMatrixFromQuaternion(cam_quat)
   pos0 = rotMat[0] * cam_pos[0] + rotMat[3] * cam_pos[1] + rotMat[6] * cam_pos[2];
   pos1 = rotMat[1] * cam_pos[0] + rotMat[4] * cam_pos[1] + rotMat[7] * cam_pos[2];
