@@ -44,7 +44,7 @@ with open("./data4.csv") as f:
       p.setJointMotorControl2(RobotId, index['right_waist_yaw_link'         ], p.POSITION_CONTROL,  math.radians(float(angle[7])))
 
       p.setJointMotorControl2(RobotId, index['right_shoulder_link'          ], p.POSITION_CONTROL, -math.radians(float(angle[8])))
-      p.setJointMotorControl2(RobotId, index['right_upper_arm_link'         ], p.POSITION_CONTROL,  math.radians(float(angle[9])))
+      p.setJointMotorControl2(RobotId, index['right_upper_arm_link'         ], p.POSITION_CONTROL, -math.radians(float(angle[9])))
       p.setJointMotorControl2(RobotId, index['right_lower_arm_link'         ], p.POSITION_CONTROL,  math.radians(float(angle[10])))
 
       p.setJointMotorControl2(RobotId, index['left_ankle_roll_link'         ], p.POSITION_CONTROL,  math.radians(float(angle[11])))
@@ -62,7 +62,7 @@ with open("./data4.csv") as f:
       p.setJointMotorControl2(RobotId, index['left_waist_yaw_link'          ], p.POSITION_CONTROL,  math.radians(float(angle[16])))
 
       p.setJointMotorControl2(RobotId, index['left_shoulder_link'           ], p.POSITION_CONTROL,  math.radians(float(angle[17])))
-      p.setJointMotorControl2(RobotId, index['left_upper_arm_link'          ], p.POSITION_CONTROL,  math.radians(float(angle[18])))
+      p.setJointMotorControl2(RobotId, index['left_upper_arm_link'          ], p.POSITION_CONTROL, -math.radians(float(angle[18])))
       p.setJointMotorControl2(RobotId, index['left_lower_arm_link'          ], p.POSITION_CONTROL, -math.radians(float(angle[19])))
 
       p.setJointMotorControl2(RobotId, index['head_yaw_link'                ], p.POSITION_CONTROL, -math.radians(float(angle[20])))
