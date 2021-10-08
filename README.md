@@ -51,31 +51,31 @@ Calculating the trajectory of the foot from the goal position
 GankenKun is an open platform humanoid robot developed by CIT Brains (Chiba Institute of Technology).  
 The robot had won the prize in RoboCup.  
 
-https://github.com/citbrains/OpenPlatform
-https://github.com/citbrains/OpenPlatform_ver3_0 (now developing ver.4)
+https://github.com/citbrains/OpenPlatform  
+https://github.com/citbrains/OpenPlatform_ver3_0 (now developing ver.4)  
 
 ### other programs (developed for understanding pybullet)  
 
 - display.py  
-Displaying the humanoid robot GankenKun
+Displaying the humanoid robot GankenKun  
 
 - stretch.py  
-Controlling the positions of joints
+Controlling the positions of joints  
 
 - camera.py  
-Capturing the camera image
+Capturing the camera image  
 
 - Walk.py
-Checking to be able to walk (Just up and down each foot)
+Checking to be able to walk (Just up and down each foot)  
 
 - inv_kine.py  
-Solving the inverse kinematics
+Solving the inverse kinematics  
 
 - display_COG.py
-Calculating the centor of gravity
+Calculating the centor of gravity  
 
 - jacobian_test.py
-Calculating the Jacobian
+Calculating the Jacobian  
 
 - COG_jacobian.py
-Calculating the centor of gravity Jacobian
+Calculating the centor of gravity Jacobian  
