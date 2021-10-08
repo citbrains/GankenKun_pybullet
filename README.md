@@ -4,17 +4,17 @@
 
 ### Video
 
-Simulation on PyBullet
+Simulation on PyBullet  
 https://youtu.be/kJb6OzS1FoM  
 latter half: comment out `sleep`  
-Computer: Core i5 + GTX1060
+Computer: Core i5 + GTX1060  
 
-RoboCup2019 (Real RoboCup Tournament)
-https://youtu.be/kFJCTB69zTQ
+RoboCup2019 (Real RoboCup Tournament)  
+https://youtu.be/kFJCTB69zTQ  
 
 ### Preparation of the development environment
 
-Ubuntu2004
+Ubuntu2004  
 ```
 sudo apt install python3-pip
 pip install pybullet
@@ -30,7 +30,7 @@ python GankenKun.py
 ### main program
 
 - GankenKun.py  
-Walking control to the target position
+Walking control to the target position  
 
 ### library for GankenKun
 
@@ -68,20 +68,20 @@ Controlling the positions of joints
 - camera.py  
 Capturing the camera image  
 
-- Walk.py
+- Walk.py  
 Checking to be able to walk (Just up and down each foot)  
 
 - inv_kine.py  
 Solving the inverse kinematics  
 
-- display_COG.py
+- display_COG.py  
 Calculating the centor of gravity  
 
-- jacobian_test.py
+- jacobian_test.py  
 Calculating the Jacobian  
 
-- COG_jacobian.py
+- COG_jacobian.py  
 Calculating the centor of gravity Jacobian  
 
-### For more detail
-http://www.cit-brains.net/
+### For more detail  
+http://www.cit-brains.net/  
