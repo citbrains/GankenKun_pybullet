@@ -3,9 +3,14 @@
 ![GankenKun](https://user-images.githubusercontent.com/5755200/79035466-fd011080-7bf9-11ea-807a-227fc551c4ad.jpg)
 
 ### Video
+
+Simulation on PyBullet
 https://youtu.be/kJb6OzS1FoM  
 latter half: comment out `sleep`  
 Computer: Core i5 + GTX1060
+
+RoboCup2019 (Real RoboCup Tournament)
+https://youtu.be/kFJCTB69zTQ
 
 ### Preparation of the development environment
 
@@ -20,9 +25,7 @@ cd GankenKun_pybullet
 python GankenKun.py
 ```
 
-
 [Microsoft Windows](https://github.com/citbrains/GankenKun_pybullet/wiki/%E9%96%8B%E7%99%BA%E7%92%B0%E5%A2%83%E3%81%AE%E6%BA%96%E5%82%99) (in Japanese)
-
 
 ### main program
 
@@ -79,3 +82,6 @@ Calculating the Jacobian
 
 - COG_jacobian.py
 Calculating the centor of gravity Jacobian  
+
+### For more detail
+http://www.cit-brains.net/
