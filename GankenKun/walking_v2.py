@@ -5,19 +5,20 @@
 import pybullet as p
 import numpy as np
 from kinematics import *
-from foot_step_planner import *
-from preview_control import *
+from foot_step_planner_v2 import *
+from preview_control_v2 import *
 from time import sleep
 import csv
 
 
 class walking():
-    def __init__(self, RobotId, left_foot0, right_foot0, joint_angles, pc):
+    def __init__(self, RobotId, left_foot0, right_foot0, joint_angles, pc, fsp):
         self.kine = kinematics(RobotId)
         self.left_foot0, self.right_foot0 = left_foot0, right_foot0
         self.joint_angles = joint_angles
         self.pc = pc
-        self.fsp = foot_step_planner(0.05, 0.03, 0.2, 0.34, 0.06)
+        self.fsp = fsp if fsp else foot_step_planner(
+            0.05, 0.03, 0.2, 0.34, 0.06)
         self.X = np.matrix([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])
         self.pattern = []
         self.left_up = self.right_up = 0.0
@@ -130,8 +131,8 @@ if __name__ == '__main__':
     p.setGravity(0, 0, -9.8)
     p.setTimeStep(TIME_STEP)
 
-    planeId = p.loadURDF("../URDF/plane.urdf", [0, 0, 0])
-    RobotId = p.loadURDF("../URDF/gankenkun.urdf", [0, 0, 0])
+    planeId = p.loadURDF("./URDF/plane.urdf", [0, 0, 0])
+    RobotId = p.loadURDF("./URDF/gankenkun.urdf", [0, 0, 0])
 
     index = {p.getBodyInfo(RobotId)[0].decode('UTF-8'): -1, }
     for id in range(p.getNumJoints(RobotId)):
@@ -139,6 +140,11 @@ if __name__ == '__main__':
 
     left_foot0 = p.getLinkState(RobotId, index['left_foot_link'])[0]
     right_foot0 = p.getLinkState(RobotId, index['right_foot_link'])[0]
+    torso0 = p.getLinkState(RobotId, index['body_link'])[0]
+
+    print(f"Left Foot: \n", left_foot0)
+    print(f"Right Foot: \n", right_foot0)
+    print(f"Torso: \n", torso0)
 
     joint_angles = []
     for id in range(p.getNumJoints(RobotId)):
@@ -149,42 +155,52 @@ if __name__ == '__main__':
     right_foot = [right_foot0[0] - 0.015,
                   right_foot0[1] - 0.01, right_foot0[2] + 0.02]
 
-    pc = preview_control(0.01, 1.0, 0.27)
+    print(f"Left Foot: \n", left_foot)
+    print(f"Right Foot: \n", right_foot)
+    print(f"Torso: \n", torso0)
 
-    walk = walking(RobotId, left_foot, right_foot, joint_angles, pc)
+    dt = 0.05
+    t_step = 0.25
+    n_steps = 4
+    preview_t = 1.25
+    pc = preview_control(dt=dt, preview_t=preview_t, z=0.25)
+    fsp = foot_step_planner(n_steps=4, dt=dt)
+    walk = walking(RobotId, left_foot, right_foot, joint_angles, pc, fsp)
 
     index_dof = {p.getBodyInfo(RobotId)[0].decode('UTF-8'): -1, }
+    print(index_dof)
     for id in range(p.getNumJoints(RobotId)):
         index_dof[p.getJointInfo(RobotId, id)[12].decode(
             'UTF-8')] = p.getJointInfo(RobotId, id)[3] - 7
 
     walk.setGoalPos([0.4, 0.0, 0.0])
     j = 0
-    with open('result.csv', mode='w') as f:
-        f.write('')
+    # with open('result.csv', mode='w') as f:
+    #     f.write('')
     foot_step = [0, ] * 10
     while p.isConnected():
-        j += 1
-        if j >= 10:
-            joint_angles, lf, rf, xp, n = walk.getNextPos()
-            with open('result.csv', mode='a') as f:
-                writer = csv.writer(f)
-                writer.writerow(np.concatenate([lf, rf, xp]))
-            j = 0
-            if n == 0:
-                if (len(foot_step) <= 6):
-                    foot_step = walk.setGoalPos(
-                        [foot_step[0][1] + 0.4, foot_step[0][2] + 0.1, foot_step[0][3] + 0.5])
-                    print("send new target *************************")
-                else:
-                    foot_step = walk.setGoalPos()
-                with open('result.csv', mode='a') as f:
-                    f.write('\n')
-        for id in range(p.getNumJoints(RobotId)):
-            qIndex = p.getJointInfo(RobotId, id)[3]
-            if qIndex > -1:
-                p.setJointMotorControl2(
-                    RobotId, id, p.POSITION_CONTROL, joint_angles[qIndex - 7])
+        pass
+        # j += 1
+        # if j >= 10:
+        #     joint_angles, lf, rf, xp, n = walk.getNextPos()
+        #     with open('result.csv', mode='a') as f:
+        #         writer = csv.writer(f)
+        #         writer.writerow(np.concatenate([lf, rf, xp]))
+        #     j = 0
+        #     if n == 0:
+        #         if (len(foot_step) <= 6):
+        #             foot_step = walk.setGoalPos(
+        #                 [foot_step[0][1] + 0.4, foot_step[0][2] + 0.1, foot_step[0][3] + 0.5])
+        #             print("send new target *************************")
+        #         else:
+        #             foot_step = walk.setGoalPos()
+        #         with open('result.csv', mode='a') as f:
+        #             f.write('\n')
+        # for id in range(p.getNumJoints(RobotId)):
+        #     qIndex = p.getJointInfo(RobotId, id)[3]
+        #     if qIndex > -1:
+        #         p.setJointMotorControl2(
+        #             RobotId, id, p.POSITION_CONTROL, joint_angles[qIndex - 7])
 
         p.stepSimulation()
 #    sleep(0.01)

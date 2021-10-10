@@ -43,11 +43,22 @@ Calculating the inverse kinematics based on the analytical solution
 - foot_step_planner.py  
 Calculating the footsteps from the goal position  
 
-- preview_control.py  
-Generating the trajectory of the center of mass from the footsteps based on the preview controller  
+- foot_step_planner_v2.py  
+Calculating the footsteps and zmpref from the given velocity command and initial states  
+
+- preview_control_v2.py  
+Generating the trajectory of the center of mass from the zmpref based on the preview controller  
 
 - walking.py  
 Calculating the trajectory of the foot from the goal position  
+
+### ZMP Walking Pattern Using Preview Control
+
+```
+python GankenKun/preview_control_v2.py 
+```
+
+![](figures/zmp_walk_pattern.png)
 
 ### What is GankenKun
 
