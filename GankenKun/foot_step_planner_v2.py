@@ -23,12 +23,14 @@ class foot_step_planner():
         self.t_step = t_step
         self.dsp_ratio = dsp_ratio
         self.t_dsp = self.dsp_ratio * self.t_step
-        self.dt = 0.01  # integral and counter
+        self.dt = dt  # integral and counter
         self.t_dsp_1 = (self.t_dsp / 2)
         self.t_dsp_2 = (self.t_dsp / 2)
 
         self.t_begin = (self.t_dsp / 2)
         self.t_end = self.t_step - (self.t_dsp / 2)
+        self.norm_t_begin = self.t_begin / self.t_step
+        self.norm_t_end = self.t_end / self.t_step
 
         # Walk Parameters
         self.n_steps = n_steps
@@ -53,6 +55,66 @@ class foot_step_planner():
             a = a - 2 * np.pi
         return a
 
+    def calcHfunc(self, t_time, norm_t):
+        """Horizontal Trajectory function
+
+        Reference: Maximo, Marcos - Omnidirectional ZMP-Based Walking for Humanoid
+        Section 3.3 - CoM Trajectory Using 3D-LIPM
+
+        Calculate the trajectory using C1-continuous spline interpolation eq. (3.36)
+
+        Parameters
+        ----------
+        t_time : float
+            The time since the beginning of the step
+        norm_t : float
+            Normalized time since the beginning of the step [0, 1]
+
+        Returns
+        -------
+        float
+            Value of interpolation at time t_time
+        """
+
+        h_func = 0
+        if norm_t < self.norm_t_begin:
+            h_func = 0
+        elif norm_t >= self.norm_t_begin and norm_t < self.norm_t_end:
+            h_func = 0.5 * \
+                (1 - np.cos(np.pi * ((t_time - self.t_begin) / (self.t_end - self.t_begin))))
+        elif norm_t >= self.norm_t_end:
+            h_func = 1
+        return h_func
+
+    def calcVfunc(self, t_time, norm_t):
+        """Vertical Trajectory function
+
+        Reference: Maximo, Marcos - Omnidirectional ZMP-Based Walking for Humanoid
+        Section 3.3 - CoM Trajectory Using 3D-LIPM
+
+        Calculate the trajectory using C1-continuous spline interpolation eq. (3.39)
+
+        Parameters
+        ----------
+        t_time : float
+            The time since the beginning of the step
+        norm_t : float
+            Normalized time since the beginning of the step [0, 1]
+
+        Returns
+        -------
+        float
+            Value of interpolation at time t
+        """
+
+        v_func = 0
+        if norm_t < self.norm_t_begin or norm_t >= self.norm_t_end:
+            v_func = 0
+        elif norm_t >= self.norm_t_begin and norm_t < self.norm_t_end:
+            v_func = 0.5 * (1 - np.cos(2 * np.pi * ((norm_t -
+                            self.norm_t_begin) / (self.norm_t_end - self.norm_t_begin))))
+        return v_func
+
     def pose_global2d(self, prelative, gpose):
         """Calculate the 2d pose of prelative w.r.t gpose
 
@@ -72,6 +134,9 @@ class foot_step_planner():
         np.ndarray
             Rotated prelative in gpose frame (x',y',theta')
         """
+
+        prelative = np.asarray(prelative, dtype=np.float32).reshape((3, 1))
+        gpose = np.asarray(gpose, dtype=np.float32).reshape((3, 1))
 
         assert prelative.shape == (3, 1), 'Shape must be (3,1)'
         assert gpose.shape == (3, 1), 'Shape must be (3,1)'
@@ -103,6 +168,9 @@ class foot_step_planner():
         np.ndarray
             Rotated gpose w.r.t prelative frame (x',y',theta')
         """
+
+        pglobal = np.asarray(pglobal, dtype=np.float32).reshape((3, 1))
+        prelative = np.asarray(prelative, dtype=np.float32).reshape((3, 1))
 
         assert pglobal.shape == (3, 1), 'Shape must be (3,1)'
         assert prelative.shape == (3, 1), 'Shape must be (3,1)'
@@ -158,7 +226,7 @@ class foot_step_planner():
         new_pose[2] += v_z
         return new_pose
 
-    def caclTorsoFoot(self, vel_cmd, current_supp, current_torso, left_is_swing):
+    def calcTorsoFoot(self, vel_cmd, current_supp, current_torso, left_is_swing):
         """Calculate the target torso and swing foot
 
         Reference: Maximo, Marcos - Omnidirectional ZMP-Based Walking for Humanoid
@@ -170,19 +238,18 @@ class foot_step_planner():
         """
         # w.r.t Support[k] globally
 
-        if isinstance(current_supp, tuple):
+        if isinstance(current_supp, list):
             current_supp = np.asarray(
                 current_supp, dtype=np.float32).reshape(3, 1)
 
-        if isinstance(current_torso, tuple):
+        if isinstance(current_torso, list):
             current_torso = np.asarray(
                 current_torso, dtype=np.float32).reshape(3, 1)
 
-        if isinstance(vel_cmd, tuple):
+        if isinstance(vel_cmd, list):
             vel_cmd = np.asarray(vel_cmd)
 
         cmd_x, cmd_y, cmd_a = vel_cmd
-
         init_supp_pos = current_supp
         init_torso_pos = current_torso
 
@@ -201,12 +268,12 @@ class foot_step_planner():
         # Z Safety check to make sure support no pointing inward > 15 deg
         a_diff = (torso_k1[2] - init_supp_pos[2])
         if np.abs(a_diff) > np.radians(15):
-            torso_k1[2] -= a_diff
+            torso_k1[2] -= (np.radians(15) - a_diff)
 
         # Y torso safety check maintain foot and torso >= y_sep
         y_diff = (torso_k1[1] - init_supp_pos[1])
         if np.abs(y_diff) < self.y_sep:
-            diff_ = self.pose_global2d(np.array([[0], [np.abs(y_diff)], [
+            diff_ = self.pose_global2d(np.array([[0], [np.abs(self.y_sep - y_diff)], [
                 0]], dtype=np.float32), np.array([[0], [0], [torso_k1[2]]], dtype=float))
             if left_is_swing:
                 torso_k1[1] += diff_[1]
@@ -264,6 +331,23 @@ class foot_step_planner():
 
         return target_torso_pos, target_swing_pos
 
+    def compute_initial_zmp(self, current_torso):
+        zmp_pos = []
+        zmp_t = 0
+        timer_count = []
+
+        if isinstance(current_torso, list) or isinstance(current_torso, tuple):
+            current_torso = np.asarray(
+                current_torso, dtype=np.float32).reshape((3, 1))
+
+        # Add reference to reduce initial error
+        for i in range(int(self.t_step // self.dt) + 1):
+            zmp_pos.append(current_torso[:2])
+            zmp_t += self.dt
+            timer_count.append(zmp_t)
+
+        return zmp_pos, timer_count
+
     def compute_zmp_trajectory(self, zmp_t, init_torso_2d, target_torso_2d, init_supp_2d):
         """Compute the zmp trajectory as a piecewise linear function.
 
@@ -271,7 +355,7 @@ class foot_step_planner():
         for Position Controlled Humanoid Robots
         Section 3.1 - Footstep generation controller
 
-        Compute the zmp trajectory from the initial torso position 
+        Compute the zmp trajectory from the initial torso position
         to the target torso position through the support foot.
 
         Parameters
@@ -322,7 +406,71 @@ class foot_step_planner():
 
         return zmp_pos, timer_count
 
-    def calculate(self, vel_cmd, current_supp, current_torso, next_support_leg, status):
+    def compute_zmp_trajectory_v2(self, t_time, init_torso_2d, target_torso_2d, init_supp_2d):
+        """Compute the zmp trajectory as a piecewise linear function.
+
+        Reference: Yi, Seung-Joon - Whole-Body Balancing Walk Controller
+        for Position Controlled Humanoid Robots
+        Section 3.1 - Footstep generation controller
+
+        Compute the zmp trajectory from the initial torso position
+        to the target torso position through the support foot.
+
+        Parameters
+        ----------
+        zmp_t : [type]
+            Current zmp time
+        init_torso_2d : [type]
+            Initial torso position (x,y)
+        target_torso_2d : [type]
+            Target torso position (x,y)
+        init_supp_2d : [type]
+            Initial support leg position (x,y)
+
+        Returns
+        -------
+        zmp_pos: List
+            List of computed zmp trajectory
+        timer_count: List
+            List of zmp timer count
+        """
+
+        zmp_pos = []
+
+        init_torso_2d = np.asarray(
+            init_torso_2d, dtype=np.float32)
+        target_torso_2d = np.asarray(
+            target_torso_2d, dtype=np.float32)
+        init_supp_2d = np.asarray(
+            init_supp_2d, dtype=np.float32)
+
+        m_dsp1 = (init_supp_2d - init_torso_2d) / self.t_dsp_1
+
+        # while (t_time < self.t_step):
+        #     if t_time < self.t_begin:
+        #         x_zmp_2d = init_torso_2d + m_dsp1 * t_time
+        #     elif t_time >= self.t_begin and t_time < self.t_end:
+        #         x_zmp_2d = init_supp_2d
+        #     elif t_time >= self.t_end:
+        #         x_zmp_2d = target_torso_2d + \
+        #             ((init_supp_2d - target_torso_2d) / self.t_dsp_2) * \
+        #             (self.t_step - t_time)  # From SJ. YI
+        #     zmp_pos.append(x_zmp_2d.ravel())
+        #     t_time += self.dt
+
+        # return zmp_pos
+        if t_time < self.t_begin:
+            x_zmp_2d = init_torso_2d + m_dsp1 * t_time
+        elif t_time >= self.t_begin and t_time < self.t_end:
+            x_zmp_2d = init_supp_2d
+        elif t_time >= self.t_end:
+            x_zmp_2d = target_torso_2d + \
+                ((init_supp_2d - target_torso_2d) / self.t_dsp_2) * \
+                (self.t_step - t_time)  # From SJ. YI
+
+        return x_zmp_2d
+
+    def calculate_v2(self, vel_cmd, current_supp, current_torso, next_support_leg, phase='dsp'):
         """Calculate N consecutive steps from the given parameters
 
         Parameters
@@ -335,8 +483,10 @@ class foot_step_planner():
             Current torso position
         next_support_leg : np.ndarray
             Next support leg sequence
-        status : str
-            Status, DEPRECATED
+        phase : str
+            Current walking phase between double support phase (dsp)
+            or single support phase (ssp), 
+            by default double support phase (dsp) 
 
         Returns
         -------
@@ -360,18 +510,17 @@ class foot_step_planner():
         timer_count = []
         left_is_swing = 1
 
-        foot_step += [[0.0, current_supp[0],
+        if isinstance(current_supp, np.ndarray):
+            current_supp = np.squeeze(current_supp).tolist()
+        if isinstance(current_torso, np.ndarray):
+            current_torso = np.squeeze(current_torso).tolist()
+
+        foot_step += [[time, current_supp[0],
                        current_supp[1], current_supp[2], 'both']]
 
         torso_pos += [[time, current_torso[0],
                        current_torso[1], current_torso[2]]]
         time += self.t_step
-
-        # Add reference to reduce initial error
-        for i in range(int(self.t_step // self.dt)):
-            zmp_pos.append(np.asarray(current_torso[:2], dtype=np.float32))
-            zmp_t += self.dt
-            timer_count.append(zmp_t)
 
         if next_support_leg == 'right':
             # foot_step += [[time, current_supp[0],
@@ -379,7 +528,9 @@ class foot_step_planner():
             # torso_pos += [[time, current_torso[0],
             #                current_torso[1], current_torso[2]]]
 
-            target_torso_pos, target_swing_pos = self.caclTorsoFoot(
+            left_is_swing = 0
+
+            target_torso_pos, target_swing_pos = self.calcTorsoFoot(
                 vel_cmd, current_supp, current_torso, left_is_swing)
 
             torso_pos += [[time, *target_torso_pos.ravel()]]
@@ -396,7 +547,161 @@ class foot_step_planner():
             #                current_supp[1], current_supp[2], next_support_leg]]
             # torso_pos += [[time, current_torso[0],
             #                current_torso[1], current_torso[2]]]
-            target_torso_pos, target_swing_pos = self.caclTorsoFoot(
+            target_torso_pos, target_swing_pos = self.calcTorsoFoot(
+                vel_cmd, current_supp, current_torso, left_is_swing)
+
+            torso_pos += [[time, *target_torso_pos.ravel()]]
+            foot_step += [[time, *target_swing_pos.ravel(), next_support_leg]]
+
+            current_torso = target_torso_pos
+            current_supp = target_swing_pos
+
+            next_support_leg = 'right'
+            left_is_swing = 0
+
+        # Compute the steps for N future steps
+        for i in range(self.n_steps - 1):
+            target_torso_pos, target_swing_pos = self.calcTorsoFoot(
+                vel_cmd, current_supp, current_torso, left_is_swing)
+            time += self.t_step
+            torso_pos += [[time, *target_torso_pos.ravel()]]
+            foot_step += [[time, *target_swing_pos.ravel(), next_support_leg]]
+
+            if left_is_swing:
+                next_support_leg = 'right'
+                left_is_swing = 0
+            else:
+                next_support_leg = 'left'
+                left_is_swing = 1
+
+            current_torso = target_torso_pos
+            current_supp = target_swing_pos
+
+            temp_zmp, temp_tzmp = self.compute_zmp_trajectory(
+                zmp_t, torso_pos[-2][1:3], torso_pos[-1][1:3], foot_step[-2][1:3])
+            zmp_pos += temp_zmp
+            timer_count += temp_tzmp
+
+        # # Add the 2 last step return to center
+        # # if not status == 'stop':
+        # time += self.t_step
+
+        # if next_support_leg == 'left':
+        #     final_support_pos = self.pose_global2d(np.array(
+        #         [[0], [2 * self.y_sep], [0]], dtype=np.float32), current_supp)  # align with support foot
+        #     target_torso_pos = self.pose_global2d(
+        #         np.array([[0], [self.y_sep], [0]], dtype=np.float32), current_supp)
+        # else:
+        #     final_support_pos = self.pose_global2d(np.array(
+        #         [[0], [-2 * self.y_sep], [0]], dtype=np.float32), current_supp)  # align with support foot
+        #     target_torso_pos = self.pose_global2d(
+        #         np.array([[0], [-self.y_sep], [0]], dtype=np.float32), current_supp)
+
+        # torso_pos += [[time, *target_torso_pos.ravel()]]
+        # foot_step += [[time, *final_support_pos.ravel(), next_support_leg]]
+
+        # temp_zmp, temp_tzmp = self.compute_zmp_trajectory(
+        #     zmp_t, torso_pos[-2][1:3], torso_pos[-1][1:3], foot_step[-2][1:3])
+        # zmp_pos += temp_zmp
+        # timer_count += temp_tzmp
+
+        # # Following the idea to hack pc
+        # time += self.t_step
+        # next_support_leg = 'both'
+        # foot_step += [[time, *final_support_pos.ravel(), next_support_leg]]
+        # torso_pos += [[time, *target_torso_pos.ravel()]]
+        # for i in range(int(self.t_end // self.dt)):
+        #     zmp_pos.append(target_torso_pos[:2].ravel())
+        #     zmp_t += self.dt
+        #     timer_count.append(zmp_t)
+
+        return foot_step, torso_pos, zmp_pos, timer_count
+
+    def calculate(self, vel_cmd, current_supp, current_torso, next_support_leg, phase='dsp'):
+        """Calculate N consecutive steps from the given parameters
+
+        Parameters
+        ----------
+        vel_cmd : Tuple
+            Velocity command input
+        current_supp : np.ndarray
+            Current support foot position
+        current_torso : np.ndarray
+            Current torso position
+        next_support_leg : np.ndarray
+            Next support leg sequence
+        phase : str
+            Current walking phase between double support phase (dsp)
+            or single support phase (ssp), 
+            by default double support phase (dsp) 
+
+        Returns
+        -------
+        foot_step: List
+            List of computed foot steps position
+        torso_pos: List
+            List of computed torso position
+        zmp_pos: List
+            List of zmp trajectory position
+        timer_count: List
+            List of zmp timer count
+        """
+
+        time = 0.0
+
+        # first step
+        torso_pos = []
+        foot_step = []
+        zmp_pos = []
+        zmp_t = 0
+        timer_count = []
+        left_is_swing = 1
+
+        if isinstance(current_supp, np.ndarray):
+            current_supp = np.squeeze(current_supp).tolist()
+        if isinstance(current_torso, np.ndarray):
+            current_torso = np.squeeze(current_torso).tolist()
+
+        foot_step += [[time, current_supp[0],
+                       current_supp[1], current_supp[2], 'both']]
+
+        torso_pos += [[time, current_torso[0],
+                       current_torso[1], current_torso[2]]]
+        time += self.t_step
+
+        # Add reference to reduce initial error
+        if phase == 'dsp':
+            for i in range(int(self.t_step // self.dt)):
+                zmp_pos.append(np.asarray(current_torso[:2], dtype=np.float32))
+                zmp_t += self.dt
+                timer_count.append(zmp_t)
+
+        if next_support_leg == 'right':
+            # foot_step += [[time, current_supp[0],
+            #                current_supp[1], current_supp[2], next_support_leg]]
+            # torso_pos += [[time, current_torso[0],
+            #                current_torso[1], current_torso[2]]]
+
+            left_is_swing = 0
+
+            target_torso_pos, target_swing_pos = self.calcTorsoFoot(
+                vel_cmd, current_supp, current_torso, left_is_swing)
+
+            torso_pos += [[time, *target_torso_pos.ravel()]]
+            foot_step += [[time, *target_swing_pos.ravel(), next_support_leg]]
+
+            current_torso = target_torso_pos
+            current_supp = target_swing_pos
+
+            next_support_leg = 'left'
+            left_is_swing = 1
+
+        elif next_support_leg == 'left':
+            # foot_step += [[time, current_supp[0],
+            #                current_supp[1], current_supp[2], next_support_leg]]
+            # torso_pos += [[time, current_torso[0],
+            #                current_torso[1], current_torso[2]]]
+            target_torso_pos, target_swing_pos = self.calcTorsoFoot(
                 vel_cmd, current_supp, current_torso, left_is_swing)
 
             torso_pos += [[time, *target_torso_pos.ravel()]]
@@ -415,7 +720,7 @@ class foot_step_planner():
 
         # Compute the steps for N future steps
         for i in range(self.n_steps - 2):
-            target_torso_pos, target_swing_pos = self.caclTorsoFoot(
+            target_torso_pos, target_swing_pos = self.calcTorsoFoot(
                 vel_cmd, current_supp, current_torso, left_is_swing)
             time += self.t_step
             torso_pos += [[time, *target_torso_pos.ravel()]]

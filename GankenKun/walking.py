@@ -12,12 +12,12 @@ import csv
 
 
 class walking():
-    def __init__(self, RobotId, left_foot0, right_foot0, joint_angles, pc):
+    def __init__(self, RobotId, left_foot0, right_foot0, joint_angles, pc, fsp):
         self.kine = kinematics(RobotId)
         self.left_foot0, self.right_foot0 = left_foot0, right_foot0
         self.joint_angles = joint_angles
         self.pc = pc
-        self.fsp = foot_step_planner(0.05, 0.03, 0.2, 0.34, 0.06)
+        self.fsp = fsp
         self.X = np.matrix([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])
         self.pattern = []
         self.left_up = self.right_up = 0.0
@@ -117,6 +117,8 @@ class walking():
                                                                               1], self. left_foot0[2] + self.left_up, 0.0, 0.0, self.th - lo[0, 2]]
         right_foot = [self.right_foot0[0] + ro[0, 0], self.right_foot0[1] + ro[0,
                                                                                1], self.right_foot0[2] + self.right_up, 0.0, 0.0, self.th - ro[0, 2]]
+        print("left foot: \n", left_foot)
+        print("right foot: \n", right_foot)
         self.joint_angles = self.kine.solve_ik(
             left_foot, right_foot, self.joint_angles)
         xp = [X[0, 2], X[0, 3]]
@@ -130,8 +132,8 @@ if __name__ == '__main__':
     p.setGravity(0, 0, -9.8)
     p.setTimeStep(TIME_STEP)
 
-    planeId = p.loadURDF("../URDF/plane.urdf", [0, 0, 0])
-    RobotId = p.loadURDF("../URDF/gankenkun.urdf", [0, 0, 0])
+    planeId = p.loadURDF("./URDF/plane.urdf", [0, 0, 0])
+    RobotId = p.loadURDF("./URDF/gankenkun.urdf", [0, 0, 0])
 
     index = {p.getBodyInfo(RobotId)[0].decode('UTF-8'): -1, }
     for id in range(p.getNumJoints(RobotId)):
@@ -150,8 +152,9 @@ if __name__ == '__main__':
                   right_foot0[1] - 0.01, right_foot0[2] + 0.02]
 
     pc = preview_control(0.01, 1.0, 0.27)
+    fsp = foot_step_planner_v1(0.05, 0.03, 0.2, 0.34, 0.06)
 
-    walk = walking(RobotId, left_foot, right_foot, joint_angles, pc)
+    walk = walking(RobotId, left_foot, right_foot, joint_angles, pc, fsp)
 
     index_dof = {p.getBodyInfo(RobotId)[0].decode('UTF-8'): -1, }
     for id in range(p.getNumJoints(RobotId)):

@@ -5,7 +5,7 @@
 import math
 
 
-class foot_step_planner():
+class foot_step_planner_v1():
     def __init__(self, max_stride_x, max_stride_y, max_stride_th, period, width):
         self.max_stride_x = max_stride_x
         self.max_stride_y = max_stride_y
