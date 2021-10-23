@@ -17,7 +17,7 @@ class foot_step_planner():
         Sample time, by default 0.01
     """
 
-    def __init__(self, n_steps=6, t_step=0.25, dsp_ratio=0.15, dt=0.01):
+    def __init__(self, n_steps=6, foot_separation=0.03525, t_step=0.25, dsp_ratio=0.15, dt=0.01):
 
         # Time Param
         self.t_step = t_step
@@ -34,7 +34,7 @@ class foot_step_planner():
 
         # Walk Parameters
         self.n_steps = n_steps
-        self.y_sep = 0.0705 / 2  # Trunk to leg sep
+        self.y_sep = foot_separation  # Trunk to leg sep
 
     def mod_angle(self, a):
         """Mod angle to keep in [-pi, pi]
@@ -341,7 +341,7 @@ class foot_step_planner():
                 current_torso, dtype=np.float32).reshape((3, 1))
 
         # Add reference to reduce initial error
-        for i in range(int(self.t_step // self.dt) + 1):
+        for i in range(int(self.t_step // self.dt)):
             zmp_pos.append(current_torso[:2])
             zmp_t += self.dt
             timer_count.append(zmp_t)
@@ -515,6 +515,7 @@ class foot_step_planner():
         if isinstance(current_torso, np.ndarray):
             current_torso = np.squeeze(current_torso).tolist()
 
+        # Current pose
         foot_step += [[time, current_supp[0],
                        current_supp[1], current_supp[2], 'both']]
 
@@ -522,6 +523,7 @@ class foot_step_planner():
                        current_torso[1], current_torso[2]]]
         time += self.t_step
 
+        # Compute the next pose
         if next_support_leg == 'right':
             # foot_step += [[time, current_supp[0],
             #                current_supp[1], current_supp[2], next_support_leg]]
