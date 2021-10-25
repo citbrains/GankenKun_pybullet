@@ -187,8 +187,8 @@ class preview_control():
 def vc_step_planner():
 
     preview_t = 1.2
-    pc_dt = 0.05
-    sys_dt = 0.01
+    pc_dt = 0.005
+    sys_dt = 0.001
 
     planner = foot_step_planner(dt=sys_dt, n_steps=4)
     pc = preview_control(dt=pc_dt, preview_t=preview_t)
@@ -204,8 +204,8 @@ def vc_step_planner():
     supp_foot = np.asarray([0, -0.03525, 0]).reshape((3, 1))
     torso = np.asarray([0, 0.0, 0]).reshape((3, 1))
     # support right with next in left
-    foot_step, torso_pos, zmp_pos, timer_count = planner.calculate_v2(
-        (0.2, 0.0, 0.0), supp_foot, torso, 'left', 'ssp')
+    foot_step, torso_pos, zmp_pos, timer_count = planner.calculate(
+        (0.2, 0.0, 0.0), supp_foot, torso, 'left', 'dsp')
 
     foot_step0 = np.asarray(foot_step)
     zmp_pos = np.asarray(zmp_pos)
@@ -229,7 +229,7 @@ def vc_step_planner():
     cog_list = []
 
     cog_list, _, _ = pc.update_preview_controller(
-        state_x, state_y, zmp_pos[:])
+        state_x, state_y, zmp_pos)
 
     cog_list = np.asarray(cog_list).squeeze()
 

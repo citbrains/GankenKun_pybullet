@@ -238,11 +238,11 @@ class foot_step_planner():
         """
         # w.r.t Support[k] globally
 
-        if isinstance(current_supp, list):
+        if isinstance(current_supp, list) or isinstance(current_supp, tuple):
             current_supp = np.asarray(
                 current_supp, dtype=np.float32).reshape(3, 1)
 
-        if isinstance(current_torso, list):
+        if isinstance(current_torso, list) or isinstance(current_torso, tuple):
             current_torso = np.asarray(
                 current_torso, dtype=np.float32).reshape(3, 1)
 
@@ -272,8 +272,8 @@ class foot_step_planner():
 
         # Y torso safety check maintain foot and torso >= y_sep
         y_diff = (torso_k1[1] - init_supp_pos[1])
-        if np.abs(y_diff) < self.y_sep:
-            diff_ = self.pose_global2d(np.array([[0], [np.abs(self.y_sep - y_diff)], [
+        if np.abs(y_diff) < (self.y_sep):
+            diff_ = self.pose_global2d(np.array([[0], [np.abs(y_diff) - self.y_sep], [
                 0]], dtype=np.float32), np.array([[0], [0], [torso_k1[2]]], dtype=float))
             if left_is_swing:
                 torso_k1[1] += diff_[1]
@@ -782,6 +782,6 @@ class foot_step_planner():
 if __name__ == '__main__':
     planner = foot_step_planner()
     foot_step, torso_pos, zmp_po, timer_count = planner.calculate(
-        (0.2, 0, 0), (0, -0.03525, 0), (0, 0, 0), 'right', 'start')
+        (0.0, 0, 0), (0, -0.03525, 0), (0, 0, 0), 'right', 'start')
     for i in foot_step:
         print(i)
