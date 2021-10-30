@@ -17,7 +17,16 @@ class foot_step_planner():
         Sample time, by default 0.01
     """
 
-    def __init__(self, n_steps=6, foot_separation=0.03525, t_step=0.25, dsp_ratio=0.15, dt=0.01):
+    def __init__(
+            self,
+            max_stride_x=0.05,
+            max_stride_y=0.03,
+            max_stride_th=0.2,
+            n_steps=6,
+            foot_separation=0.03525,
+            t_step=0.25,
+            dsp_ratio=0.15,
+            dt=0.01):
 
         # Time Param
         self.t_step = t_step
@@ -75,7 +84,6 @@ class foot_step_planner():
         float
             Value of interpolation at time t_time
         """
-
         h_func = 0
         if norm_t < self.norm_t_begin:
             h_func = 0
@@ -331,7 +339,7 @@ class foot_step_planner():
 
         return target_torso_pos, target_swing_pos
 
-    def compute_initial_zmp(self, current_torso):
+    def compute_initial_zmp(self, current_torso, repeat=1):
         zmp_pos = []
         zmp_t = 0
         timer_count = []
@@ -341,7 +349,7 @@ class foot_step_planner():
                 current_torso, dtype=np.float32).reshape((3, 1))
 
         # Add reference to reduce initial error
-        for i in range(int(self.t_step // self.dt)):
+        for i in range(int((self.t_step * repeat) // self.dt)):
             zmp_pos.append(current_torso[:2])
             zmp_t += self.dt
             timer_count.append(zmp_t)
@@ -470,7 +478,7 @@ class foot_step_planner():
 
         return x_zmp_2d
 
-    def calculate_v2(self, vel_cmd, current_supp, current_torso, next_support_leg, phase='dsp'):
+    def calculate_v2(self, vel_cmd, current_supp, current_torso, next_support_leg, sway=True):
         """Calculate N consecutive steps from the given parameters
 
         Parameters
@@ -485,8 +493,8 @@ class foot_step_planner():
             Next support leg sequence
         phase : str
             Current walking phase between double support phase (dsp)
-            or single support phase (ssp), 
-            by default double support phase (dsp) 
+            or single support phase (ssp),
+            by default double support phase (dsp)
 
         Returns
         -------
@@ -523,12 +531,29 @@ class foot_step_planner():
                        current_torso[1], current_torso[2]]]
         time += self.t_step
 
-        # Compute the next pose
-        if next_support_leg == 'right':
-            # foot_step += [[time, current_supp[0],
-            #                current_supp[1], current_supp[2], next_support_leg]]
+        # Add reference to reduce initial error
+        if sway:
+            for i in range(int(self.t_step // self.dt)):
+                zmp_pos.append(np.asarray(current_torso[:2], dtype=np.float32))
+                zmp_t += self.dt
+                timer_count.append(zmp_t)
+
+            target_torso_pos, target_swing_pos = self.calcTorsoFoot(
+                (0, 0, 0), current_supp, current_torso, left_is_swing)
+
+            torso_pos += [[time, *target_torso_pos.ravel()]]
+            foot_step += [[time, *target_swing_pos.ravel(), next_support_leg]]
+
+            # current_torso = target_torso_pos
+            # current_supp = target_swing_pos
+
             # torso_pos += [[time, current_torso[0],
             #                current_torso[1], current_torso[2]]]
+            # foot_step += [[time, current_supp[0],
+            #                current_supp[1], current_supp[2], next_support_leg]]
+
+        # Compute the next pose
+        if next_support_leg == 'right':
 
             left_is_swing = 0
 
@@ -545,10 +570,6 @@ class foot_step_planner():
             left_is_swing = 1
 
         elif next_support_leg == 'left':
-            # foot_step += [[time, current_supp[0],
-            #                current_supp[1], current_supp[2], next_support_leg]]
-            # torso_pos += [[time, current_torso[0],
-            #                current_torso[1], current_torso[2]]]
             target_torso_pos, target_swing_pos = self.calcTorsoFoot(
                 vel_cmd, current_supp, current_torso, left_is_swing)
 
@@ -561,20 +582,30 @@ class foot_step_planner():
             next_support_leg = 'right'
             left_is_swing = 0
 
+        # temp_zmp, temp_tzmp = self.compute_zmp_trajectory(
+        #     zmp_t, torso_pos[-2][1:3], torso_pos[-1][1:3], foot_step[-2][1:3])
+        # zmp_pos += temp_zmp
+        # timer_count += temp_tzmp
+
         # Compute the steps for N future steps
-        for i in range(self.n_steps - 1):
+        for i in range(self.n_steps - 2):
+
+            if next_support_leg == 'right':
+
+                left_is_swing = 0
+
             target_torso_pos, target_swing_pos = self.calcTorsoFoot(
                 vel_cmd, current_supp, current_torso, left_is_swing)
             time += self.t_step
             torso_pos += [[time, *target_torso_pos.ravel()]]
             foot_step += [[time, *target_swing_pos.ravel(), next_support_leg]]
 
-            if left_is_swing:
-                next_support_leg = 'right'
-                left_is_swing = 0
-            else:
+            if next_support_leg == 'right':
                 next_support_leg = 'left'
                 left_is_swing = 1
+            else:
+                next_support_leg = 'right'
+                left_is_swing = 0
 
             current_torso = target_torso_pos
             current_supp = target_swing_pos
@@ -619,7 +650,7 @@ class foot_step_planner():
 
         return foot_step, torso_pos, zmp_pos, timer_count
 
-    def calculate(self, vel_cmd, current_supp, current_torso, next_support_leg, phase='dsp'):
+    def calculate(self, vel_cmd, current_supp, current_torso, next_support_leg, sway=True):
         """Calculate N consecutive steps from the given parameters
 
         Parameters
@@ -672,7 +703,7 @@ class foot_step_planner():
         time += self.t_step
 
         # Add reference to reduce initial error
-        if phase == 'dsp':
+        if sway:
             for i in range(int(self.t_step // self.dt)):
                 zmp_pos.append(np.asarray(current_torso[:2], dtype=np.float32))
                 zmp_t += self.dt

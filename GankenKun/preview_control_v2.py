@@ -186,11 +186,12 @@ class preview_control():
 
 def vc_step_planner():
 
-    preview_t = 1.2
-    pc_dt = 0.005
+    preview_t = 1.5
+    pc_dt = 0.0015
     sys_dt = 0.001
 
-    planner = foot_step_planner(dt=sys_dt, n_steps=4)
+    planner = foot_step_planner(
+        dt=sys_dt, n_steps=4, dsp_ratio=0.0, t_step=0.34)
     pc = preview_control(dt=pc_dt, preview_t=preview_t)
 
     fig, axs = plt.subplots(2, 2)
@@ -205,7 +206,7 @@ def vc_step_planner():
     torso = np.asarray([0, 0.0, 0]).reshape((3, 1))
     # support right with next in left
     foot_step, torso_pos, zmp_pos, timer_count = planner.calculate(
-        (0.2, 0.0, 0.0), supp_foot, torso, 'left', 'dsp')
+        (0.2, 0.0, 0.0), supp_foot, torso, 'left', True)
 
     foot_step0 = np.asarray(foot_step)
     zmp_pos = np.asarray(zmp_pos)
