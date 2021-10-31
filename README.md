@@ -49,16 +49,23 @@ Calculating the footsteps and zmpref from the given velocity command and initial
 - preview_control_v2.py  
 Generating the trajectory of the center of mass from the zmpref based on the preview controller  
 
-- walking.py  
-Calculating the trajectory of the foot from the goal position  
+- walking_v2.py  
+Main walking engine and controller from given input and the initial state  
 
 ### ZMP Walking Pattern Using Preview Control
 
+## Walk pattern 
 ```
 python GankenKun/preview_control_v2.py 
 ```
 
 ![](figures/zmp_walk_pattern.png)
+
+## Walk simulation
+
+```
+python GankenKun_velocity_control.py
+```
 
 ### What is GankenKun
 

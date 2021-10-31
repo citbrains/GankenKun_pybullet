@@ -5,9 +5,9 @@ import numpy as np
 import sys
 sys.path.append('./GankenKun')
 from kinematics import *
-from foot_step_planner import *
-from preview_control import *
-from walking import *
+from foot_step_planner_v2 import *
+from preview_control_v2 import *
+from walking_v2 import *
 from random import random
 from time import sleep
 import csv
