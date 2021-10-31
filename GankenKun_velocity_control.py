@@ -13,61 +13,70 @@ from time import sleep
 import csv
 
 if __name__ == '__main__':
+    # Initialize PyBullet
     TIME_STEP = 0.001
     physicsClient = p.connect(p.GUI)
     p.setGravity(0, 0, -9.8)
     p.setTimeStep(TIME_STEP)
 
-    planeId = p.loadURDF("URDF/plane.urdf", [0, 0, 0])
-    RobotId = p.loadURDF("URDF/gankenkun.urdf", [0, 0, 0])
+    planeId = p.loadURDF("./URDF/plane.urdf", [0, 0, 0])
+    RobotId = p.loadURDF("./URDF/gankenkun.urdf", [0, 0, 0])
 
     index = {p.getBodyInfo(RobotId)[0].decode('UTF-8'): -1, }
     for id in range(p.getNumJoints(RobotId)):
         index[p.getJointInfo(RobotId, id)[12].decode('UTF-8')] = id
 
-    left_foot0 = p.getLinkState(RobotId, index['left_foot_link'])[0]
-    right_foot0 = p.getLinkState(RobotId, index['right_foot_link'])[0]
+    kine = kinematics(RobotId)
+
+    left_ank_roll0 = p.getLinkState(RobotId, index['left_ankle_roll_link'])[0]
+    left_ank_pitch0 = p.getLinkState(
+        RobotId, index['left_ankle_pitch_link'])[0]
 
     joint_angles = []
     for id in range(p.getNumJoints(RobotId)):
         if p.getJointInfo(RobotId, id)[3] > -1:
             joint_angles += [0, ]
 
-    print(f'left_foot_urdf_state: {left_foot0}')
-    print(f'right_foot_urdf_state: {right_foot0}')
+    preview_t = 1.5
+    pc_dt = 0.0015
+    sys_dt = 0.001
 
-    # Foot offset in initial position
-    left_foot = [left_foot0[0] - 0.015,
-                 left_foot0[1] + 0.01, left_foot0[2] + 0.02]
-    right_foot = [right_foot0[0] - 0.015,
-                  right_foot0[1] - 0.01, right_foot0[2] + 0.02]
-
-    pc = preview_control(0.01, 1.0, 0.27)
-    walk = walking(RobotId, left_foot, right_foot, joint_angles, pc)
+    fsp = foot_step_planner(dt=sys_dt, n_steps=4, dsp_ratio=0.15,
+                            t_step=0.34, foot_separation=0.044)
+    pc = preview_control(dt=pc_dt, preview_t=preview_t)
+    walk = walking(pc, fsp,
+                   foot_offset=[-0.015, 0.01, 0.02], dt=sys_dt)
 
     index_dof = {p.getBodyInfo(RobotId)[0].decode('UTF-8'): -1, }
+
     for id in range(p.getNumJoints(RobotId)):
         index_dof[p.getJointInfo(RobotId, id)[12].decode(
             'UTF-8')] = p.getJointInfo(RobotId, id)[3] - 7
 
-    # goal position (x, y) theta
-    foot_step = walk.setGoalPos([0.4, 0.0, 0.5])
-    print(f"first_foot_step: {foot_step}")
-    j = 0
+    walk.setVelocity([0, 0, 0.0])
+    foot_step = [0, ] * 10
+
     while p.isConnected():
-        j += 1
-        if j >= 10:
-            joint_angles, lf, rf, xp, n = walk.getNextPos()
-            j = 0
-            if n == 0:
-                if (len(foot_step) <= 5):
-                    x_goal, y_goal, th = random() - 0.5, random() - 0.5, random() - 0.5
-                    print("Goal: (" + str(x_goal) + ", " +
-                          str(y_goal) + ", " + str(th) + ")")
-                    foot_step = walk.setGoalPos([x_goal, y_goal, th])
-                else:
-                    foot_step = walk.setGoalPos()
-                # if you want new goal, please send position
+
+        # Get current input and output for each step
+        _, left_foot_traj, right_foot_traj = walk.get_walk_pattern()
+
+        joint_angles = kine.solve_ik(
+            left_foot_traj, right_foot_traj, joint_angles)
+
+        # Change velocity every 10 steps
+        if walk.steps_count % 11 == 0:
+            if walk.steps_count < 200:
+                vel_x = np.random.uniform(0, 0.1)
+                vel_y = np.random.uniform(-0.1, 0.1)
+                vel_th = np.random.uniform(-0.1, 0.1)
+            else:
+                vel_x = 0
+                vel_y = 0
+                vel_th = 0
+            walk.setVelocity([vel_x, vel_y, vel_th])
+
+        # Output Target w.r.t hip center
         for id in range(p.getNumJoints(RobotId)):
             qIndex = p.getJointInfo(RobotId, id)[3]
             if qIndex > -1:
@@ -75,4 +84,3 @@ if __name__ == '__main__':
                     RobotId, id, p.POSITION_CONTROL, joint_angles[qIndex - 7])
 
         p.stepSimulation()
-#    sleep(TIME_STEP) # delete -> speed up

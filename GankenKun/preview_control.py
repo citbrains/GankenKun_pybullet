@@ -204,7 +204,5 @@ def vc_step_planner():
 
 
 if __name__ == '__main__':
-    # pc = preview_control(0.01, 0.23)
     vc_step_planner()
     # default_dummy_planner()
-    # x, y = np.matrix([[0.0], [0.0], [0.0]]), np.matrix([[0.0], [0.0], [0.0]])
